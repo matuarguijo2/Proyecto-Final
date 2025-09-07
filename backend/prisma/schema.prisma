@@ -16,6 +16,7 @@ model Donante {
   password  String
   rol       String   // "donante" | "hospital" | "admin"
   createdAt DateTime @default(now())
+  isActive Boolean @default(true)
   donaciones Donacion[] // Relación: un donante puede tener muchas donaciones
 }
 
