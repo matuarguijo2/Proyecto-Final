@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Donante {
   id        Int      @id @default(autoincrement())
   dni       String   @unique
   nombre    String
@@ -16,5 +16,22 @@ model User {
   password  String
   rol       String   // "donante" | "hospital" | "admin"
   createdAt DateTime @default(now())
+  donaciones Donacion[] // Relación: un donante puede tener muchas donaciones
+}
+
+model Hospital {
+  id Int @id @default(autoincrement())
+  nombre String 
+  direccion String
+  numero Int 
+  telefono BigInt
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Donacion { 
+  id Int @id @default(autoincrement())
+  DonanteId Int
+  donante Donante @relation(fields: [DonanteId], references: [id])
 }
 
