@@ -8,7 +8,7 @@ const router = Router();
 router.post("/", async (req, res) => {
   try {
     const { dni, nombre, apellido, email, password, rol } = req.body;
-    const user = await prisma.user.create({
+    const user = await prisma.donante.create({
       data: { dni, nombre, apellido, email, password, rol },
     });
     res.json(user);
@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 
 // Listar usuarios
 router.get("/", async (req, res) => {
-  const users = await prisma.user.findMany();
+  const users = await prisma.donante.findMany();
   res.json(users);
 });
 
