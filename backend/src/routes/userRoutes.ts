@@ -29,7 +29,14 @@ router.post("/campanias", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
     const campania = await prisma.campania.create({
-      data: { nombre, descripcion, fecha_inicio: new Date(fecha_inicio), fecha_fin: fecha_fin ? new Date(fecha_fin) : null, ubicacion, hospitalId },
+      data: {
+        nombre,
+        descripcion,
+        fecha_inicio: new Date(fecha_inicio),
+        fecha_fin: fecha_fin ? new Date(fecha_fin) : null,
+        ubicacion,
+        hospitalId
+      },
     });
     res.json(campania);
   } catch (error) {
@@ -58,6 +65,13 @@ router.post("/hospitales", async (req, res) => {
 router.get("/usuarios", async (req, res) => {
   const users = await prisma.donante.findMany();
   res.json(users);
+});
+
+router.get("/campanias", async (req, res) => {
+  const campanias = await prisma.campania.findMany({
+    include: { hospital: true }
+  });
+  res.json(campanias);
 });
 
 router.get("/hospitales", async (req, res) => {

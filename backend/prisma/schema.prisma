@@ -42,6 +42,17 @@ enum Sexo{
   Femenino
 }
 
+enum TipoHospital{
+  Publico
+  Privado
+}
+
+enum EstadoCampania{
+  Activa
+  Finalizada
+  Cancelada
+}
+
 model Donante {
   id        Int      @id @default(autoincrement())
   dni       String   @unique
@@ -67,6 +78,8 @@ model Campania {
   fecha_inicio DateTime
   fecha_fin DateTime?
   ubicacion String
+  imagen_url string?
+  estado EstadoCampania
 
   hospital Hospital @relation(fields:[hospitalId], references:[id], onDelete: Cascade)
   hospitalId Int
@@ -78,6 +91,9 @@ model Hospital {
   nombre     String
   direccion  String
   telefono   Int
+  email String
+  tipo TipoHospital
+  horario_atencion String
   isActive   Boolean     @default(true)
   createdAt  DateTime    @default(now())
   campanias  Campania[]
@@ -88,6 +104,7 @@ model Donacion {
   id Int @id @default(autoincrement())
   fecha_donacion DateTime
   tipo_donacion TipoDonacion
+  observaciones String?
   estado EstadoDonacion @default(pendiente)
 
   donante Donante @relation(fields: [DonanteId], references: [id])
