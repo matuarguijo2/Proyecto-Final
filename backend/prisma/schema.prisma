@@ -21,18 +21,21 @@ model Donante {
 }
 
 model Hospital {
-  id Int @id @default(autoincrement())
-  nombre String 
-  direccion String
-  numero Int 
-  telefono BigInt
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
+  id         Int         @id @default(autoincrement())
+  nombre     String
+  direccion  String
+  numero     Int
+  telefono   BigInt
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  donaciones Donacion[]  // Relación: un hospital puede tener muchas donaciones
 }
 
 model Donacion { 
-  id Int @id @default(autoincrement())
-  DonanteId Int
-  donante Donante @relation(fields: [DonanteId], references: [id])
+  id         Int      @id @default(autoincrement())
+  DonanteId  Int
+  HospitalId Int
+  donante    Donante  @relation(fields: [DonanteId], references: [id])
+  hospital   Hospital @relation(fields: [HospitalId], references: [id])
 }
 
