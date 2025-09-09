@@ -7,6 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum GrupoSanguineo{
+  A
+  B
+  AB
+  O
+}
+
+enum FatorRH{
+  positivo
+  negativo
+}
+
+enum TipoDonacion{
+  sangre_completa
+  plasma
+  plaqueta
+}
+
+enum EstadoDonacion{
+  exitosa
+  rechazada
+  pendiente
+}
+
+enum EstadoDonante{
+  activo
+  inactivo
+  suspendido
+}
+
+enum Sexo{
+  Masculino
+  Femenino
+}
+
 model Donante {
   id        Int      @id @default(autoincrement())
   dni       String   @unique
@@ -14,10 +49,28 @@ model Donante {
   apellido  String
   email     String   @unique
   password  String
-  rol       String   // "donante" | "hospital" | "admin"
   createdAt DateTime @default(now())
   isActive Boolean @default(true)
+  grupo_sanguineo GrupoSanguineo
+  factor_rh FatorRH
+  fecha_nacimiento DateTime
+  sexo Sexo
+  fecha_ultima_donacion DateTime?
+  estado EstadoDonante @default(activo)
   donaciones Donacion[] // Relación: un donante puede tener muchas donaciones
+}
+
+model Campania {
+  id Int @id @default(autoincrement())
+  nombre String 
+  descripcion String?
+  fecha_inicio DateTime
+  fecha_fin DateTime?
+  ubicacion String
+
+  hospital Hospital @relation(fields:[hospitalId], references:[id], onDelete: Cascade)
+  hospitalId Int
+  donaciones Donacion[]
 }
 
 model Hospital {
@@ -28,11 +81,24 @@ model Hospital {
   telefono BigInt
   isActive Boolean @default(true)
   createdAt DateTime @default(now())
+
+  campanias Campania[]
+  donaciones Donacion[]
 }
 
 model Donacion { 
   id Int @id @default(autoincrement())
-  DonanteId Int
+  fecha_donacion DateTime
+  tipo_donacion TipoDonacion
+  estado EstadoDonacion @default(pendiente)
+
   donante Donante @relation(fields: [DonanteId], references: [id])
+  DonanteId Int
+
+  campania Campania? @relation(fields: [campaniaId], references: [id], onDelete: SetNull)
+  campaniaId Int?
+
+  hospital Hospital? @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+  hospitalId Int? 
 }
 

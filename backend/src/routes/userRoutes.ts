@@ -7,9 +7,12 @@ const router = Router();
 // Crear usuario
 router.post("/", async (req, res) => {
   try {
-    const { dni, nombre, apellido, email, password, rol } = req.body;
+    const { dni, nombre, apellido, email, password, grupo_sanguineo, factor_rh, fecha_nacimiento, sexo } = req.body;
+    if (!dni || !nombre || !apellido || !email || !password || !grupo_sanguineo || !factor_rh || !fecha_nacimiento || !sexo) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
     const user = await prisma.donante.create({
-      data: { dni, nombre, apellido, email, password, rol },
+      data: { dni, nombre, apellido, email, password, grupo_sanguineo, factor_rh, fecha_nacimiento: new Date(fecha_nacimiento), sexo },
     });
     res.json(user);
   } catch (error) {
