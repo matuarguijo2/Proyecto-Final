@@ -77,8 +77,7 @@ model Hospital {
   id         Int         @id @default(autoincrement())
   nombre     String
   direccion  String
-  numero     Int
-  telefono   BigInt
+  telefono   Int
   isActive   Boolean     @default(true)
   createdAt  DateTime    @default(now())
   campanias  Campania[]

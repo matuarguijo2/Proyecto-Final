@@ -8,7 +8,7 @@ const app = express();
 const PORT = 4000;
 
 app.use(express.json())
-app.use("/api/users", userRoutes);
+app.use("/api", userRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Servidor corriendo con ts-node 🚀" });
