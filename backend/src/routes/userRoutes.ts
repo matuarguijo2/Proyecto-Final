@@ -61,6 +61,22 @@ router.post("/hospitales", async (req, res) => {
   }
 });
 
+router.post("/donaciones", async (req, res) => {
+  try {
+    const { donanteId, hospitalId, fecha } = req.body;
+    if (!donanteId || !hospitalId || !fecha) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+    const donacion = await prisma.donacion.create({
+      data: { donanteId, hospitalId, fecha: new Date(fecha) },
+    });
+    res.json(donacion);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al crear donación" });
+  }
+});
+
 // Listar usuarios
 router.get("/usuarios", async (req, res) => {
   const users = await prisma.donante.findMany();
@@ -79,3 +95,8 @@ router.get("/hospitales", async (req, res) => {
   res.json(hospitales);
 });
 export default router;
+
+router.get("/donantes", async (req, res) => {
+  const donantes = await prisma.donante.findMany();
+  res.json(donantes);
+});

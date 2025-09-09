@@ -78,7 +78,7 @@ model Campania {
   fecha_inicio DateTime
   fecha_fin DateTime?
   ubicacion String
-  imagen_url string?
+  imagen_url String?
   estado EstadoCampania
 
   hospital Hospital @relation(fields:[hospitalId], references:[id], onDelete: Cascade)
