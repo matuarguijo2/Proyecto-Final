@@ -74,15 +74,14 @@ model Campania {
 }
 
 model Hospital {
-  id Int @id @default(autoincrement())
-  nombre String 
-  direccion String
-  numero Int 
-  telefono BigInt
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
-
-  campanias Campania[]
+  id         Int         @id @default(autoincrement())
+  nombre     String
+  direccion  String
+  numero     Int
+  telefono   BigInt
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  campanias  Campania[]
   donaciones Donacion[]
 }
 
