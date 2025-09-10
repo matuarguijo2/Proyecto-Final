@@ -24,8 +24,8 @@ router.post("/usuarios", async (req, res) => {
 // Crear campania
 router.post("/campanias", async (req, res) => {
   try {
-    const { nombre, descripcion, fecha_inicio, fecha_fin, ubicacion, hospitalId } = req.body;
-    if (!nombre || !fecha_inicio || !ubicacion || !hospitalId) {
+    const { nombre, descripcion, fecha_inicio, fecha_fin, ubicacion, imagen_url, estado, hospitalId } = req.body;
+    if (!nombre || !fecha_inicio || !ubicacion || !hospitalId || !estado) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
     const campania = await prisma.campania.create({
@@ -35,7 +35,9 @@ router.post("/campanias", async (req, res) => {
         fecha_inicio: new Date(fecha_inicio),
         fecha_fin: fecha_fin ? new Date(fecha_fin) : null,
         ubicacion,
-        hospitalId
+        imagen_url: imagen_url || undefined,
+        estado,
+        hospitalId: Number(hospitalId)
       },
     });
     res.json(campania);
@@ -47,12 +49,12 @@ router.post("/campanias", async (req, res) => {
 
 router.post("/hospitales", async (req, res) => {
   try {
-    const { nombre, direccion, telefono } = req.body;
-    if (!nombre || !direccion || !telefono) {
+    const { nombre, direccion, telefono, email, tipo, horario_atencion } = req.body;
+    if (!nombre || !direccion || !telefono || !email || !tipo || !horario_atencion) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
     const hospital = await prisma.hospital.create({
-      data: { nombre, direccion, telefono: Number(telefono) },
+      data: { nombre, direccion, telefono: Number(telefono), email, tipo, horario_atencion },
     });
     res.json(hospital);
   } catch (error) {
@@ -63,12 +65,20 @@ router.post("/hospitales", async (req, res) => {
 
 router.post("/donaciones", async (req, res) => {
   try {
-    const { donanteId, hospitalId, fecha } = req.body;
-    if (!donanteId || !hospitalId || !fecha) {
+    const { DonanteId, hospitalId, fecha_donacion, tipo_donacion, estado, observaciones, campaniaId } = req.body;
+    if (!DonanteId || !hospitalId || !fecha_donacion || !tipo_donacion) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
     const donacion = await prisma.donacion.create({
-      data: { donanteId, hospitalId, fecha: new Date(fecha) },
+      data: {
+        DonanteId: Number(DonanteId),
+        hospitalId: Number(hospitalId),
+        fecha_donacion: new Date(fecha_donacion),
+        tipo_donacion,
+        estado: estado || undefined,
+        observaciones: observaciones || undefined,
+        campaniaId: campaniaId ? Number(campaniaId) : undefined
+      },
     });
     res.json(donacion);
   } catch (error) {
@@ -94,9 +104,10 @@ router.get("/hospitales", async (req, res) => {
   const hospitales = await prisma.hospital.findMany();
   res.json(hospitales);
 });
-export default router;
 
 router.get("/donantes", async (req, res) => {
   const donantes = await prisma.donante.findMany();
   res.json(donantes);
 });
+
+export default router;
