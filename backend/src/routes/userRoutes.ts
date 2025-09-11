@@ -105,9 +105,16 @@ router.get("/hospitales", async (req, res) => {
   res.json(hospitales);
 });
 
-router.get("/donantes", async (req, res) => {
-  const donantes = await prisma.donante.findMany();
-  res.json(donantes);
+router.get("/donaciones", async (req, res) => {
+  try {
+    const donaciones = await prisma.donacion.findMany({
+      include: { donante: true, campania: true, hospital: true }
+    });
+    res.json(donaciones);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener donaciones" });
+  }
 });
 
 export default router;
