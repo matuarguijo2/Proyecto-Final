@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Donante" ADD COLUMN     "resetToken" TEXT,
+ADD COLUMN     "resetTokenExp" TIMESTAMP(3),
+ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
