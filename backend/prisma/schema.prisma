@@ -14,7 +14,7 @@ enum GrupoSanguineo{
   O
 }
 
-enum FatorRH{
+enum FactorRH{
   positivo
   negativo
 }
@@ -64,7 +64,7 @@ model Donante {
   updatedAt DateTime @default(now()) @updatedAt
   isActive Boolean @default(true)
   grupo_sanguineo GrupoSanguineo
-  factor_rh FatorRH
+  factor_rh FactorRH
   fecha_nacimiento DateTime
   sexo Sexo
   fecha_ultima_donacion DateTime?

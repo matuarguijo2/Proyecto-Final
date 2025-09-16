@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {signup} from "../controladores/authcontrolador.ts";
+import {signup} from "../controladores/authcontrolador";
 
 const router = Router();
 

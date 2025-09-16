@@ -1,44 +1,69 @@
 import bcrypt from "bcryptjs";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { generateAccessToken, generateRefreshToken } from "../utilidades/tokens.ts"
+import { PrismaClient, GrupoSanguineo, FatorRH, Sexo } from "@prisma/client";
+import { generarToken, generarRefreshToken } from "../utilidades/token";
 
-const prisma = new PrismaClient(); // Fixed variable name to avoid conflict with import
+const prisma = new PrismaClient();
+
+function parseGrupo(v: string): GrupoSanguineo {
+  const x = v.toUpperCase();
+  if (x === "A" || x === "B" || x === "AB" || x === "O") return x as GrupoSanguineo;
+  throw new Error("grupo_sanguineo inválido");
+}
+
+function parseRH(v: string): FatorRH {
+  const x = v.toLowerCase();
+  if (x === "positivo" || x === "negativo") return x as FatorRH;
+  throw new Error("factor_rh inválido");
+}
+
+function parseSexo(v: string): Sexo {
+  const x = v.toLowerCase();
+  if (x === "masculino") return "Masculino";
+  if (x === "femenino") return "Femenino";
+  throw new Error("sexo inválido");
+}
 
 export const signup = async (
-    email: string, 
-    password: string,
-    dni: string,
-    nombre: string,
-    apellido: string,
-    grupo_sanguineo: grupo_sanguineo as GrupoSanguineo,
-    factor_rh: factor_rh as FactorRH,
-    fecha_nacimiento: fecha_nacimiento as Date,
-    sexo: sexo as Sexo
+  email: string,
+  password: string,
+  dni: string,
+  nombre: string,
+  apellido: string,
+  grupo_sanguineo: string,
+  factor_rh: string,
+  fecha_nacimiento: string | Date,
+  sexo: string
 ) => {
-    if (!email || !password || !dni || !nombre || !apellido || !grupo_sanguineo || !factor_rh || !fecha_nacimiento || !sexo) {
-        throw new Error("Todos los campos son obligatorios");
+  if (!email || !password || !dni || !nombre || !apellido || !grupo_sanguineo || !factor_rh || !fecha_nacimiento || !sexo) {
+    throw new Error("Todos los campos son obligatorios");
+  }
+
+  const existing = await prisma.donante.findUnique({ where: { email } });
+  if (existing) throw new Error("El usuario ya existe");
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const grupo = parseGrupo(grupo_sanguineo);
+  const rh = parseRH(factor_rh);
+  const sexoEnum = parseSexo(sexo);
+  const fecha = typeof fecha_nacimiento === "string" ? new Date(fecha_nacimiento) : fecha_nacimiento;
+  if (isNaN(fecha.getTime())) throw new Error("fecha_nacimiento inválida");
+
+  const user = await prisma.donante.create({
+    data: {
+      email,
+      password: hashedPassword,
+      dni,
+      nombre,
+      apellido,
+      grupo_sanguineo: grupo,
+      factor_rh: rh,
+      fecha_nacimiento: fecha,
+      sexo: sexoEnum
     }
+  });
 
-    const existing = await prisma.donante.findUnique({ where: { email } });
-    if (existing) throw new Error("El usuario ya existe");
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.donante.create({
-        data: { 
-            email, 
-            password: hashedPassword,
-            dni,
-            nombre,
-            apellido,
-            grupo_sanguineo,
-            factor_rh,
-            fecha_nacimiento,
-            sexo
-        }
-    });
-
-    const accessToken = generateAccessToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
-
+    const accessToken = generarToken(String(user.id));
+    const refreshToken = generarRefreshToken(String(user.id));
     return { accessToken, refreshToken };
 }
