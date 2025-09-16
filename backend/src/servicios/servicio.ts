@@ -4,8 +4,20 @@ import { generateAccessToken, generateRefreshToken } from "../utilidades/tokens.
 
 const prisma = new PrismaClient(); // Fixed variable name to avoid conflict with import
 
-export const signup = async (email: string, password: string) => {
-    if (!email || !password) throw new Error("Email y contraseña son obligatorios");
+export const signup = async (
+    email: string, 
+    password: string,
+    dni: string,
+    nombre: string,
+    apellido: string,
+    grupo_sanguineo: grupo_sanguineo as GrupoSanguineo,
+    factor_rh: factor_rh as FactorRH,
+    fecha_nacimiento: fecha_nacimiento as Date,
+    sexo: sexo as Sexo
+) => {
+    if (!email || !password || !dni || !nombre || !apellido || !grupo_sanguineo || !factor_rh || !fecha_nacimiento || !sexo) {
+        throw new Error("Todos los campos son obligatorios");
+    }
 
     const existing = await prisma.donante.findUnique({ where: { email } });
     if (existing) throw new Error("El usuario ya existe");
@@ -15,13 +27,13 @@ export const signup = async (email: string, password: string) => {
         data: { 
             email, 
             password: hashedPassword,
-            dni: "00000000",
-            nombre: "Nombre",
-            apellido: "Apellido",
-            grupo_sanguineo: "O",
-            factor_rh: "positivo",
-            fecha_nacimiento: new Date(),
-            sexo: "Femenino"
+            dni,
+            nombre,
+            apellido,
+            grupo_sanguineo,
+            factor_rh,
+            fecha_nacimiento,
+            sexo
         }
     });
 
