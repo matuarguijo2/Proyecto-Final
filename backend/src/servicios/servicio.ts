@@ -1,5 +1,5 @@
-import bcrypt from "bcryptjs";
-import { PrismaClient, GrupoSanguineo, FatorRH, Sexo } from "@prisma/client";
+import { hashPassword } from "../utilidades/contrasenia";
+import { PrismaClient, GrupoSanguineo, FactorRH, Sexo } from "@prisma/client";
 import { generarToken, generarRefreshToken } from "../utilidades/token";
 
 const prisma = new PrismaClient();
@@ -10,9 +10,9 @@ function parseGrupo(v: string): GrupoSanguineo {
   throw new Error("grupo_sanguineo inválido");
 }
 
-function parseRH(v: string): FatorRH {
+function parseRH(v: string): FactorRH {
   const x = v.toLowerCase();
-  if (x === "positivo" || x === "negativo") return x as FatorRH;
+  if (x === "positivo" || x === "negativo") return x as FactorRH;
   throw new Error("factor_rh inválido");
 }
 
@@ -41,13 +41,13 @@ export const signup = async (
   const existing = await prisma.donante.findUnique({ where: { email } });
   if (existing) throw new Error("El usuario ya existe");
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await hashPassword(password);
 
   const grupo = parseGrupo(grupo_sanguineo);
   const rh = parseRH(factor_rh);
   const sexoEnum = parseSexo(sexo);
   const fecha = typeof fecha_nacimiento === "string" ? new Date(fecha_nacimiento) : fecha_nacimiento;
-  if (isNaN(fecha.getTime())) throw new Error("fecha_nacimiento inválida");
+  if (isNaN(fecha.getTime())) throw new Error("La fecha de nacimiento es inválida o no está en el formato correcto");
 
   const user = await prisma.donante.create({
     data: {
