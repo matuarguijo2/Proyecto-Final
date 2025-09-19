@@ -1,4 +1,4 @@
-import { hashPassword } from "../utilidades/contrasenia";
+import { comparePassword, hashPassword } from "../utilidades/contrasenia";
 import { PrismaClient, GrupoSanguineo, FactorRH, Sexo } from "@prisma/client";
 import { generarToken, generarRefreshToken } from "../utilidades/token";
 
@@ -67,3 +67,19 @@ export const signup = async (
     const refreshToken = generarRefreshToken(String(user.id));
     return { accessToken, refreshToken };
 }
+
+export const login = async (email: string, password: string) => {
+  if (!email || !password) {
+    throw new Error("Email y contraseña son obligatorios");
+  }
+
+  const user = await prisma.donante.findUnique({ where: { email } });
+  if (!user) throw new Error("Usuario no encontrado");
+
+  const isValidPassword = await comparePassword(password, user.password);
+  if (!isValidPassword) throw new Error("Contraseña incorrecta");
+
+  const accessToken = generarToken(String(user.id));
+  const refreshToken = generarRefreshToken(String(user.id));
+  return { accessToken, refreshToken };
+};
