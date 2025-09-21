@@ -13,3 +13,7 @@ export const generarRefreshToken = (usuarioId: string) => {
   });
   return refreshToken;
 }
+
+export const verificarRefreshToken = (token: string) => {
+  return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!);
+}
