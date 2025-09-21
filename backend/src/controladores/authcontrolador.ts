@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as AuthService from '../servicios/servicio';
 
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { email, password, dni, nombre, apellido, grupo_sanguineo, factor_rh, fecha_nacimiento, sexo } = req.body;
@@ -89,5 +90,38 @@ export const refreshToken = async (req: Request, res: Response) => {
   } catch (error: any) {
     const status = error?.status || 400;
     return res.status(status).json({ error: error?.message || "Error al refrescar el token" });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "El email es obligatorio" });
+    }
+
+    await AuthService.forgotPassword(email);
+
+    return res.status(200).json({ message: "Si el correo existe, se ha enviado un enlace de restablecimiento de contraseña." });
+  } catch (error: any) {
+    const status = error?.status || 400;
+    return res.status(status).json({ error: error?.message || "Error al enviar el enlace de restablecimiento de contraseña" });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Faltan Campos Requeridos" });
+    }
+
+    await AuthService.resetPassword(token, newPassword);
+
+    return res.status(200).json({ message: "Contraseña restablecida con éxito" });
+  } catch (error: any) {
+    const status = error?.status || 400;
+    return res.status(status).json({ error: error?.message || "Error al restablecer la contraseña" });
   }
 };

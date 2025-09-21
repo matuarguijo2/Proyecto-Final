@@ -1,7 +1,8 @@
 import { comparePassword, hashPassword } from "../utilidades/contrasenia";
 import { PrismaClient, GrupoSanguineo, FactorRH, Sexo } from "@prisma/client";
-import { generarToken, generarRefreshToken, verificarRefreshToken } from "../utilidades/token";
+import { generarToken, generarRefreshToken, verificarRefreshToken, generarResetToken } from "../utilidades/token";
 import Jwt from "jsonwebtoken";
+import { hash } from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -99,3 +100,45 @@ export const refreshAccessToken = (token: string) => {
     throw new Error("Token inválido o expirado");
   }
 };
+
+export const forgotPassword = async (email: string) => {
+  const user = await prisma.donante.findUnique({ where: { email } });
+  if (!user) return; // No revelar si el usuario no existe
+
+  const { token, expiresAt } = generarResetToken(String(user.id));
+
+  await prisma.donante.update({
+    where: { email },
+    data: {
+      resetToken: token,
+      resetTokenExp: expiresAt,
+    }
+  });
+
+  console.log({
+    'Password reset link (simulated email)': `http://localhost:5173/reset-password?token=${token}&email=${encodeURIComponent(email)}`
+  });
+}
+
+export const resetPassword = async ( token: string, newPassword: string) => {
+  const user = await prisma.donante.findFirst({ where: {
+    resetToken: token,
+    resetTokenExp: {
+      gte: new Date(),
+    },
+  }, 
+});
+
+  if (!user) throw new Error("Token inválido o expirado");
+
+  const hashedPassword = await hashPassword(newPassword);
+
+  await prisma.donante.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      resetToken: null,
+      resetTokenExp: null,
+    }
+  });
+}
