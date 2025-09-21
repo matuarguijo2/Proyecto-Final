@@ -71,3 +71,23 @@ export const logout = (req: Request, res: Response) => {
     res.status(400).json({ error: err.message || "Error al cerrar sesión" });
   }
 };
+
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const token = req.cookies.refreshToken;
+    
+    const { accessToken, refreshToken } = AuthService.refreshAccessToken(token);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({ accessToken });
+  } catch (error: any) {
+    const status = error?.status || 400;
+    return res.status(status).json({ error: error?.message || "Error al refrescar el token" });
+  }
+};

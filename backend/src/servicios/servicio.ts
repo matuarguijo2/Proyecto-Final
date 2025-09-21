@@ -1,6 +1,7 @@
 import { comparePassword, hashPassword } from "../utilidades/contrasenia";
 import { PrismaClient, GrupoSanguineo, FactorRH, Sexo } from "@prisma/client";
-import { generarToken, generarRefreshToken } from "../utilidades/token";
+import { generarToken, generarRefreshToken, verificarRefreshToken } from "../utilidades/token";
+import Jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -74,12 +75,27 @@ export const login = async (email: string, password: string) => {
   }
 
   const user = await prisma.donante.findUnique({ where: { email } });
-  if (!user) throw new Error("Usuario no encontrado");
+  if (!user) throw new Error("Contraseña o usuario incorrecto");
 
   const isValidPassword = await comparePassword(password, user.password);
-  if (!isValidPassword) throw new Error("Contraseña incorrecta");
+  if (!isValidPassword) throw new Error("Contraseña o usuario incorrecto");
 
   const accessToken = generarToken(String(user.id));
   const refreshToken = generarRefreshToken(String(user.id));
   return { accessToken, refreshToken };
+};
+
+export const refreshAccessToken = (token: string) => {
+  if (!token) throw new Error("Token es obligatorio");
+  
+  try {
+    const payload = verificarRefreshToken(token);
+
+    const newAccessToken = generarToken(payload.usuarioId);
+    const newRefreshToken = generarRefreshToken(payload.usuarioId);
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+  } catch (error) {
+    throw new Error("Token inválido o expirado");
+  }
 };
