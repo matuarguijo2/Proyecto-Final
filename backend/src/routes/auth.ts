@@ -10,5 +10,8 @@ router.post("/refresh-token", refreshToken);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 
+router.get("/protected", (req, res) => {
+    res.json({ message: "Estas autenticado como: ${req.usuarioId}" });
+});
 
 export default router;

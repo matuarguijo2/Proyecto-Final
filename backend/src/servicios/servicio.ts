@@ -1,8 +1,6 @@
 import { comparePassword, hashPassword } from "../utilidades/contrasenia";
 import { PrismaClient, GrupoSanguineo, FactorRH, Sexo } from "@prisma/client";
 import { generarToken, generarRefreshToken, verificarRefreshToken, generarResetToken } from "../utilidades/token";
-import Jwt from "jsonwebtoken";
-import { hash } from "crypto";
 
 const prisma = new PrismaClient();
 
