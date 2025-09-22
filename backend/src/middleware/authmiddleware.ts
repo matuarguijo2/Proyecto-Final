@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { verificarRefreshToken } from "../utilidades/token";
+import { verificarAccesoToken } from "../utilidades/token";
 
 interface AuthenticatedRequest extends Request {
     usuarioId?: number;
@@ -17,7 +17,7 @@ export const requireAuth = (
     }
 
     try {
-        const payload = verificarRefreshToken(token);
+        const payload = verificarAccesoToken(token);
         req.usuarioId = Number(payload.usuarioId);
         next();
     } catch (error) {

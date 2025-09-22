@@ -21,6 +21,12 @@ export const verificarRefreshToken = (token: string) => {
   };
 }
 
+export const verificarAccesoToken = (token: string) => {
+  return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
+    usuarioId: string;
+  };
+}
+
 export const generarResetToken = (usuarioId: string) => {
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 1000 * 60 * 15); // 15 minutos
