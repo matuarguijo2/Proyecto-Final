@@ -1,3 +1,7 @@
 export default function Home() {
-  return <h1>Bienvenido a mi proyecto Next.js</h1>;
+  return (
+    <div className="container">
+      <h1>Hola Next.js</h1>
+    </div>
+  );
 }
