@@ -2,8 +2,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Roboto } from "next/font/google";
+import { Poppins } from "next/font/google";
 
 const roboto = Roboto({ weight: "500", subsets: ["latin"] });
+const poppins = Poppins({ weight: "600", subsets: ["latin"] });
 
 export default function Navbar() {
   return (
@@ -41,10 +43,10 @@ export default function Navbar() {
         </ul>
 
         <div className="actions">
-          <Link href="/registro" className="btn btn-red">
+          <Link href="/registro" className={`${poppins.className} btn btn-red`}>
             REGÍSTRATE
           </Link>
-          <Link href="/aporte" className="btn btn-green">
+          <Link href="/aporte" className={`${poppins.className} btn btn-green`}>
             HAZ TU APORTE
           </Link>
         </div>
@@ -169,20 +171,4 @@ export default function Navbar() {
       `}</style>
     </nav>
   );
-
-  return (  
-<nav>
-          <ul>
-            <li>
-              <Link href="/involucrate">Involucrate</Link>
-            </li>
-            <li>
-              <Link href="/conocemas">Conoce Más</Link>
-            </li>
-            <li>
-              <Link href="/serdonante">Ser Donante</Link>
-            </li>
-          </ul>
-        </nav>
-    );
 }
