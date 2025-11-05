@@ -169,4 +169,20 @@ export default function Navbar() {
       `}</style>
     </nav>
   );
+
+  return (  
+<nav>
+          <ul>
+            <li>
+              <Link href="/involucrate">Involucrate</Link>
+            </li>
+            <li>
+              <Link href="/conocemas">Conoce Más</Link>
+            </li>
+            <li>
+              <Link href="/serdonante">Ser Donante</Link>
+            </li>
+          </ul>
+        </nav>
+    );
 }
