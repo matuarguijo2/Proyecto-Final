@@ -25,20 +25,71 @@ export default function Navbar() {
         </div>
 
         <ul className="navlinks">
-          <li>
+          <li className="dropdown-item">
             <Link href="/involucrate" className="nav-link">
               Involúcrate
             </Link>
+            <ul className="dropdown-menu">
+              <li>
+                <Link href="/serdonante" className="dropdown-link">
+                  Conviértete en donante
+                </Link>
+              </li>
+              <li>
+                <Link href="/formas-ayuda" className="dropdown-link">
+                  Formas de ayudar
+                </Link>
+              </li>
+              <li>
+                <Link href="/pacientes" className="dropdown-link">
+                  Pacientes
+                </Link>
+              </li>
+            </ul>
           </li>
-          <li>
+          <li className="dropdown-item">
             <Link href="/conocemas" className="nav-link">
               Conoce Más
             </Link>
+            <ul className="dropdown-menu">
+              <li>
+                <Link href="/acerca-de-nosotros" className="dropdown-link">
+                  Acerca de nosotros
+                </Link>
+              </li>
+              <li>
+                <Link href="/cancer-de-sangre" className="dropdown-link">
+                  Cáncer de sangre
+                </Link>
+              </li>
+            </ul>
           </li>
-          <li>
+          <li className="dropdown-item">
             <Link href="/serdonante" className="nav-link">
               Ser Donante
             </Link>
+            <ul className="dropdown-menu">
+              <li>
+                <Link href="/requisitos-donante" className="dropdown-link">
+                  Buscando la compatibilidad perfecta
+                </Link>
+              </li>
+              <li>
+                <Link href="/preparacion-donacion" className="dropdown-link">
+                  Preparándose para donar
+                </Link>
+              </li>
+              <li>
+                <Link href="/post-donacion" className="dropdown-link">
+                  Qué hacer después de la donación
+                </Link>
+              </li>
+              <li>
+                <Link href="/tiempo-donacion" className="dropdown-link">
+                  ¿Cuánto tiempo tarda?
+                </Link>
+              </li>
+            </ul>
           </li>
         </ul>
 
@@ -154,6 +205,63 @@ export default function Navbar() {
         .actions a {
           text-decoration: none !important;
           color: inherit !important;
+        }
+
+        /* Definición del Dropdown */
+        .dropdown-item {
+          position: relative;
+          height: 100%;
+          display: flex;
+          align-items: center;
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: 100%; /* Justo debajo del item */
+          left: 0;
+          background-color: #ffffff;
+          box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+          border-radius: 8px;
+          padding: 8px 0;
+          min-width: 240px;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(10px);
+          transition: all 0.3s ease;
+          gap: 0;
+          flex-direction: column;
+          display: flex;
+          z-index: 100;
+        }
+
+        .dropdown-item:hover .dropdown-menu {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .dropdown-menu li {
+          width: 100%;
+          margin: 0;
+          display: block;
+        }
+
+        /* Estilos para los enlaces del dropdown */
+        /* Nota: Usamos :global para asegurar que aplicamos sobre el Link/a de Next.js */
+        .dropdown-menu :global(.dropdown-link) {
+          display: block;
+          padding: 12px 20px;
+          color: #333 !important;
+          font-size: 15px !important;
+          font-weight: 500 !important;
+          text-decoration: none !important;
+          transition: background-color 0.2s ease, color 0.2s ease;
+          width: 100%;
+        }
+
+        .dropdown-menu :global(.dropdown-link:hover) {
+          background-color: #f5f5f5;
+          color: #e04b44 !important; /* Color rojo de la marca */
         }
 
         @media (max-width: 720px) {
