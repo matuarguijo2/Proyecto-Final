@@ -1,29 +1,28 @@
-@tailwind utilities;
+@import "tailwindcss";
 
-@import "tailwindcss/preflight";
-
-/* 🎨 Variables globales */
+/* 🎨 Variables globales y tema Tailwind */
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --primary: #dc2626; /* rojo sangre */
+  --primary: #e04b44; /* rojo sangre - marca */
   --secondary: #f87171; /* rojo más claro */
+  --brand-green: #3bb24a;
+  --brand-green-dark: #2e7d32;
+  --brand-blue: #2196f3;
+  --brand-blue-dark: #0d47a1;
+  --brand-red-dark: #c62828;
 }
 
-/* 🌙 Modo oscuro */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #000000;
-  }
-}
-
-/* 🖋️ Definición de tema */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-dark: var(--brand-green-dark);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-dark: var(--brand-blue-dark);
+  --color-brand-red-dark: var(--brand-red-dark);
   --font-sans: var(--font-geist-sans, 'Inter', sans-serif);
   --font-mono: var(--font-geist-mono, monospace);
 }
@@ -36,3 +35,4 @@ body {
   margin: 0;
   padding: 0;
 }
+
