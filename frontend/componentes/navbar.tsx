@@ -62,6 +62,11 @@ export default function Navbar() {
                   Pacientes
                 </Link>
               </li>
+              <li className="block w-full m-0">
+                <Link href="/involucrate/crear-campana" className="block w-full px-5 py-3 text-[#333] text-[15px] font-medium no-underline transition-colors hover:bg-gray-100 hover:text-primary">
+                  Crear campaña
+                </Link>
+              </li>
             </ul>
           </li>
           <li
@@ -87,6 +92,11 @@ export default function Navbar() {
               <li className="block w-full m-0">
                 <Link href="/cancer-de-sangre" className="block w-full px-5 py-3 text-[#333] text-[15px] font-medium no-underline transition-colors hover:bg-gray-100 hover:text-primary">
                   Cáncer de sangre
+                </Link>
+              </li>
+              <li className="block w-full m-0">
+                <Link href="/conocemas/campanas" className="block w-full px-5 py-3 text-[#333] text-[15px] font-medium no-underline transition-colors hover:bg-gray-100 hover:text-primary">
+                  Conocer campañas
                 </Link>
               </li>
             </ul>
