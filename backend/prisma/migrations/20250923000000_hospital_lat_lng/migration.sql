@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Hospital" ADD COLUMN "latitude" DOUBLE PRECISION;
+ALTER TABLE "Hospital" ADD COLUMN "longitude" DOUBLE PRECISION;

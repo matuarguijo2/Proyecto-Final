@@ -251,8 +251,35 @@ router.delete("/campanias/:id", async (req, res) => {
 });
 
 router.get("/hospitales", async (req, res) => {
-  const hospitales = await prisma.hospital.findMany();
+  const hospitales = await prisma.hospital.findMany({
+    where: { isActive: true },
+    orderBy: { nombre: "asc" },
+  });
   res.json(hospitales);
+});
+
+router.patch("/hospitales/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Id inválido" });
+    }
+    const { latitude, longitude } = req.body;
+    if (latitude == null || longitude == null || typeof latitude !== "number" || typeof longitude !== "number") {
+      return res.status(400).json({ error: "Se requieren latitude y longitude numéricos" });
+    }
+    const hospital = await prisma.hospital.update({
+      where: { id },
+      data: { latitude, longitude },
+    });
+    return res.json(hospital);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "P2025") {
+      return res.status(404).json({ error: "Hospital no encontrado" });
+    }
+    console.error(error);
+    return res.status(500).json({ error: "Error al actualizar el hospital" });
+  }
 });
 
 router.get("/donaciones", async (req, res) => {

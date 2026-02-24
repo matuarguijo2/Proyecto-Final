@@ -5,15 +5,17 @@
     "module": "CommonJS",                  
     "rootDir": "./src",                    
     "outDir": "./dist",                    
-    
+
     /* Configuración de imports */
     "esModuleInterop": true,               
     "allowSyntheticDefaultImports": true,  
-    
+
     /* Seguridad y chequeos */
     "strict": true,                        
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true                   
-  }
+    "skipLibCheck": true                  
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "prisma"]
 }
 
