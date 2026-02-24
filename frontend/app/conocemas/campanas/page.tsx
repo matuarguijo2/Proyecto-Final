@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCampanas, formatFechaLimite } from "@/lib/api-campanas";
+import AccionesCampana from "./AccionesCampana";
 
 export const metadata = {
   title: "Conocer campañas | Conoce Más",
@@ -81,6 +82,7 @@ export default async function ConocerCampanasPage() {
                 <p className="text-sm text-primary font-medium">
                   Contacto: {c.telefonoEmailOrganizador}
                 </p>
+                <AccionesCampana id={c.id} />
                 </div>
               </li>
             ))}

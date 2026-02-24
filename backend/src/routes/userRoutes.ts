@@ -149,6 +149,107 @@ router.get("/campanias", async (req, res) => {
   res.json(campanias);
 });
 
+// Obtener una campaña por id
+router.get("/campanias/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Id inválido" });
+    }
+    const campania = await prisma.campania.findUnique({
+      where: { id },
+      include: { hospital: true }
+    });
+    if (!campania) {
+      return res.status(404).json({ error: "Campaña no encontrada" });
+    }
+    res.json(campania);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener la campaña" });
+  }
+});
+
+// Actualizar campaña (formato organizador, mismos campos que crear)
+router.patch("/campanias/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Id inválido" });
+    }
+    const body = req.body;
+    const {
+      nombreApellido,
+      dni,
+      grupoSanguineoRh,
+      cantidadDadores,
+      nombreCentro,
+      direccionCompleta,
+      horariosDias,
+      fechaLimiteAnio,
+      fechaLimiteMes,
+      fechaLimiteDia,
+      tituloAsunto,
+      descripcionRequisitos,
+      telefonoEmailOrganizador,
+      imagenUrl,
+    } = body;
+
+    if (!tituloAsunto || !nombreApellido || !dni || !nombreCentro || !direccionCompleta || !horariosDias || !fechaLimiteAnio || !fechaLimiteMes || !fechaLimiteDia || !descripcionRequisitos || !telefonoEmailOrganizador) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
+    const mes = parseInt(fechaLimiteMes, 10);
+    const fechaLimite = new Date(parseInt(fechaLimiteAnio, 10), mes, parseInt(fechaLimiteDia, 10));
+
+    const campania = await prisma.campania.update({
+      where: { id },
+      data: {
+        nombre: tituloAsunto,
+        descripcion: descripcionRequisitos,
+        fecha_fin: fechaLimite,
+        ubicacion: direccionCompleta,
+        imagen_url: imagenUrl !== undefined ? (imagenUrl || null) : undefined,
+        nombreApellidoReceptor: nombreApellido,
+        dniReceptor: dni,
+        grupoSanguineoRh: grupoSanguineoRh || undefined,
+        cantidadDadores: cantidadDadores || undefined,
+        nombreCentro,
+        direccionCompleta,
+        horariosDias,
+        telefonoEmailOrganizador,
+      },
+    });
+    return res.json(campania);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "P2025") {
+      return res.status(404).json({ error: "Campaña no encontrada" });
+    }
+    console.error(error);
+    return res.status(500).json({ error: "Error al actualizar la campaña" });
+  }
+});
+
+// Eliminar campaña
+router.delete("/campanias/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Id inválido" });
+    }
+    await prisma.campania.delete({
+      where: { id }
+    });
+    return res.status(204).send();
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "P2025") {
+      return res.status(404).json({ error: "Campaña no encontrada" });
+    }
+    console.error(error);
+    return res.status(500).json({ error: "Error al eliminar la campaña" });
+  }
+});
+
 router.get("/hospitales", async (req, res) => {
   const hospitales = await prisma.hospital.findMany();
   res.json(hospitales);

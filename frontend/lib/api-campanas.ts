@@ -74,6 +74,15 @@ export async function getCampanas(): Promise<Campana[]> {
   return data.map(mapBackendToFrontend);
 }
 
+export async function getCampanaById(id: string): Promise<Campana | null> {
+  const res = await fetch(`${API_URL}/api/campanias/${id}`, { cache: "no-store" });
+  if (!res.ok) {
+    return null;
+  }
+  const data: CampanaBackend = await res.json();
+  return mapBackendToFrontend(data);
+}
+
 export function formatFechaLimite(c: Campana): string {
   const dia = c.fechaLimiteDia;
   const mesIdx = parseInt(c.fechaLimiteMes, 10);

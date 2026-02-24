@@ -43,6 +43,8 @@ const initialForm: FormState = {
   imagenUrl: "",
 };
 
+export type FormStateCampana = FormState;
+
 const MESES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -54,8 +56,14 @@ function getDiasDelMes(mes: number, anio: number): number {
   return d.getDate();
 }
 
-export default function FormularioCrearCampana() {
-  const [form, setForm] = useState<FormState>(initialForm);
+type FormularioCrearCampanaProps = {
+  initialData?: FormState;
+  campaniaId?: string;
+};
+
+export default function FormularioCrearCampana({ initialData, campaniaId }: FormularioCrearCampanaProps = {}) {
+  const isEdit = Boolean(campaniaId);
+  const [form, setForm] = useState<FormState>(() => initialData ?? initialForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [enviado, setEnviado] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
@@ -75,9 +83,16 @@ export default function FormularioCrearCampana() {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { error?: string; url?: string };
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        setErrorImagen(res.ok ? "Error al subir la imagen" : "Error del servidor al subir la imagen");
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Error al subir la imagen");
-      update("imagenUrl", data.url);
+      if (data.url) update("imagenUrl", data.url);
     } catch (err) {
       setErrorImagen(err instanceof Error ? err.message : "Error al subir la imagen");
     } finally {
@@ -122,18 +137,20 @@ export default function FormularioCrearCampana() {
     setErrorEnvio(null);
     setEnviando(true);
     try {
-      const res = await fetch("/api/campanas", {
-        method: "POST",
+      const url = isEdit ? `/api/campanas/${campaniaId}` : "/api/campanas";
+      const method = isEdit ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Error al enviar la campaña");
+        throw new Error(data.error || (isEdit ? "Error al actualizar la campaña" : "Error al enviar la campaña"));
       }
       setEnviado(true);
     } catch (err) {
-      setErrorEnvio(err instanceof Error ? err.message : "Error al enviar la campaña");
+      setErrorEnvio(err instanceof Error ? err.message : (isEdit ? "Error al actualizar la campaña" : "Error al enviar la campaña"));
     } finally {
       setEnviando(false);
     }
@@ -143,13 +160,19 @@ export default function FormularioCrearCampana() {
     return (
       <div className="mx-auto max-w-[1200px] px-8 py-12">
         <div className="rounded-xl border border-green-200 bg-green-50 p-8 text-center">
-          <h2 className="mb-2 text-2xl font-semibold text-primary">Campaña enviada</h2>
-          <p className="mb-6 text-gray-700">Tu solicitud de campaña de donación ha sido recibida correctamente.</p>
+          <h2 className="mb-2 text-2xl font-semibold text-primary">
+            {isEdit ? "Datos modificados correctamente" : "Campaña enviada"}
+          </h2>
+          <p className="mb-6 text-gray-700">
+            {isEdit
+              ? "Los datos de la campaña de donación se han actualizado correctamente."
+              : "Tu solicitud de campaña de donación ha sido recibida correctamente."}
+          </p>
           <Link
-            href="/involucrate"
+            href={isEdit ? "/conocemas/campanas" : "/involucrate"}
             className={`${poppins.className} inline-flex rounded-full bg-primary px-6 py-3 text-white no-underline hover:opacity-95`}
           >
-            Volver a Involúcrate
+            {isEdit ? "Volver a Conocer campañas" : "Volver a Involúcrate"}
           </Link>
         </div>
       </div>
@@ -159,12 +182,14 @@ export default function FormularioCrearCampana() {
   return (
     <div className="mx-auto max-w-[1200px] px-8 py-8">
       <div className="mb-8">
-        <Link href="/involucrate" className="text-primary no-underline hover:underline">
-          ← Volver a Involúcrate
+        <Link href={isEdit ? "/conocemas/campanas" : "/involucrate"} className="text-primary no-underline hover:underline">
+          ← {isEdit ? "Volver a Conocer campañas" : "Volver a Involúcrate"}
         </Link>
       </div>
 
-      <h1 className="mb-8 text-[2.5rem] text-primary">Crear campaña de donación</h1>
+      <h1 className="mb-8 text-[2.5rem] text-primary">
+        {isEdit ? "Modificar campaña de donación" : "Crear campaña de donación"}
+      </h1>
 
       {errorEnvio && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
@@ -390,10 +415,10 @@ export default function FormularioCrearCampana() {
             disabled={enviando}
             className={`${poppins.className} inline-flex items-center justify-center rounded-full bg-primary px-6 py-3.5 text-base font-extrabold text-white shadow-[0_6px_18px_rgba(0,0,0,0.08)] transition-all duration-[120ms] hover:-translate-y-0.5 hover:opacity-95 disabled:opacity-60 disabled:pointer-events-none`}
           >
-            {enviando ? "Enviando…" : "Enviar campaña"}
+            {enviando ? (isEdit ? "Guardando…" : "Enviando…") : (isEdit ? "Guardar cambios" : "Enviar campaña")}
           </button>
           <Link
-            href="/involucrate"
+            href={isEdit ? "/conocemas/campanas" : "/involucrate"}
             className="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-3.5 text-gray-700 no-underline hover:bg-gray-50"
           >
             Cancelar

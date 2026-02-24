@@ -39,9 +39,15 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, Buffer.from(bytes));
     const url = `/uploads/campanas/${filename}`;
     return NextResponse.json({ url });
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    const isReadOnly = /EACCES|EROFS|EPERM|read-only/i.test(message);
     return NextResponse.json(
-      { error: "Error al subir la imagen" },
+      {
+        error: isReadOnly
+          ? "No se puede guardar la imagen en este entorno. Prueba en local o usa otro tipo de almacenamiento."
+          : "Error al subir la imagen",
+      },
       { status: 500 }
     );
   }
