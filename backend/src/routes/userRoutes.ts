@@ -144,7 +144,11 @@ router.get("/usuarios", async (req, res) => {
 
 router.get("/campanias", async (req, res) => {
   const campanias = await prisma.campania.findMany({
-    include: { hospital: true }
+    where: { estado: "Activa" },
+    include: {
+      hospital: true,
+      _count: { select: { inscripciones: true } },
+    },
   });
   res.json(campanias);
 });
@@ -158,7 +162,10 @@ router.get("/campanias/:id", async (req, res) => {
     }
     const campania = await prisma.campania.findUnique({
       where: { id },
-      include: { hospital: true }
+      include: {
+        hospital: true,
+        _count: { select: { inscripciones: true } },
+      },
     });
     if (!campania) {
       return res.status(404).json({ error: "Campaña no encontrada" });
@@ -167,6 +174,83 @@ router.get("/campanias/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener la campaña" });
+  }
+});
+
+// Inscribirse en una campaña (aumenta la barra de progreso; si se llega a la meta, la campaña pasa a Finalizada)
+router.post("/campanias/:id/inscribir", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Id inválido" });
+    }
+    const { email } = req.body;
+    if (!email || typeof email !== "string" || !email.trim()) {
+      return res.status(400).json({ error: "El email es obligatorio" });
+    }
+    const emailNorm = email.trim().toLowerCase();
+    const campania = await prisma.campania.findUnique({
+      where: { id },
+      include: { _count: { select: { inscripciones: true } } },
+    });
+    if (!campania) {
+      return res.status(404).json({ error: "Campaña no encontrada" });
+    }
+    if (campania.estado !== "Activa") {
+      return res.status(400).json({ error: "La campaña ya no acepta inscripciones" });
+    }
+    const meta = parseInt(campania.cantidadDadores || "0", 10);
+    if (meta <= 0) {
+      return res.status(400).json({ error: "Esta campaña no tiene meta de dadores definida" });
+    }
+    await prisma.inscripcionCampania.upsert({
+      where: {
+        campaniaId_email: { campaniaId: id, email: emailNorm },
+      },
+      create: { campaniaId: id, email: emailNorm },
+      update: {},
+    });
+    const nuevaCuenta = await prisma.inscripcionCampania.count({
+      where: { campaniaId: id },
+    });
+    if (nuevaCuenta >= meta) {
+      await prisma.campania.update({
+        where: { id },
+        data: { estado: "Finalizada" },
+      });
+    }
+    const campaniaActualizada = await prisma.campania.findUnique({
+      where: { id },
+      include: {
+        hospital: true,
+        _count: { select: { inscripciones: true } },
+      },
+    });
+    return res.json({
+      inscripciones: nuevaCuenta,
+      meta,
+      completada: nuevaCuenta >= meta,
+      campania: campaniaActualizada,
+    });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "P2002") {
+      const id = parseInt(req.params.id, 10);
+      const campania = await prisma.campania.findUnique({
+        where: { id },
+        include: { _count: { select: { inscripciones: true } } },
+      });
+      const meta = campania ? parseInt(campania.cantidadDadores || "0", 10) : 0;
+      const inscripciones = campania?._count?.inscripciones ?? 0;
+      return res.status(200).json({
+        message: "Ya estabas inscrito en esta campaña",
+        inscripciones,
+        meta,
+        completada: inscripciones >= meta,
+        campania,
+      });
+    }
+    console.error(error);
+    return res.status(500).json({ error: "Error al inscribirse" });
   }
 });
 
