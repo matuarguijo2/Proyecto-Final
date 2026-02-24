@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCampanas, formatFechaLimite } from "@/lib/campanas";
+import { getCampanas, formatFechaLimite } from "@/lib/api-campanas";
 
 export const metadata = {
   title: "Conocer campañas | Conoce Más",

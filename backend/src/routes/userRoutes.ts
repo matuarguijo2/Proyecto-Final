@@ -21,10 +21,59 @@ router.post("/usuarios", async (req, res) => {
   }
 });
 
-// Crear campania
+// Crear campania (soporta formato organizador y formato hospital)
 router.post("/campanias", async (req, res) => {
   try {
-    const { nombre, descripcion, fecha_inicio, fecha_fin, ubicacion, imagen_url, estado, hospitalId } = req.body;
+    const body = req.body;
+
+    // Formato organizador (formulario público)
+    if (body.tituloAsunto !== undefined) {
+      const {
+        nombreApellido,
+        dni,
+        grupoSanguineoRh,
+        cantidadDadores,
+        nombreCentro,
+        direccionCompleta,
+        horariosDias,
+        fechaLimiteAnio,
+        fechaLimiteMes,
+        fechaLimiteDia,
+        tituloAsunto,
+        descripcionRequisitos,
+        telefonoEmailOrganizador,
+        imagenUrl,
+      } = body;
+
+      if (!tituloAsunto || !nombreApellido || !dni || !nombreCentro || !direccionCompleta || !horariosDias || !fechaLimiteAnio || !fechaLimiteMes || !fechaLimiteDia || !descripcionRequisitos || !telefonoEmailOrganizador) {
+        return res.status(400).json({ error: "Faltan campos obligatorios" });
+      }
+
+      const mes = parseInt(fechaLimiteMes, 10);
+      const fechaLimite = new Date(parseInt(fechaLimiteAnio, 10), mes, parseInt(fechaLimiteDia, 10));
+
+      const campania = await prisma.campania.create({
+        data: {
+          nombre: tituloAsunto,
+          descripcion: descripcionRequisitos,
+          fecha_fin: fechaLimite,
+          ubicacion: direccionCompleta,
+          imagen_url: imagenUrl || undefined,
+          nombreApellidoReceptor: nombreApellido,
+          dniReceptor: dni,
+          grupoSanguineoRh: grupoSanguineoRh || undefined,
+          cantidadDadores: cantidadDadores || undefined,
+          nombreCentro,
+          direccionCompleta,
+          horariosDias,
+          telefonoEmailOrganizador,
+        },
+      });
+      return res.json(campania);
+    }
+
+    // Formato hospital (admin)
+    const { nombre, descripcion, fecha_inicio, fecha_fin, ubicacion, imagen_url, estado, hospitalId } = body;
     if (!nombre || !fecha_inicio || !ubicacion || !hospitalId || !estado) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
@@ -37,7 +86,7 @@ router.post("/campanias", async (req, res) => {
         ubicacion,
         imagen_url: imagen_url || undefined,
         estado,
-        hospitalId: Number(hospitalId)
+        hospitalId: Number(hospitalId),
       },
     });
     res.json(campania);

@@ -76,17 +76,28 @@ model Donante {
 
 model Campania {
   id Int @id @default(autoincrement())
-  nombre String 
+  nombre String
   descripcion String?
-  fecha_inicio DateTime
+  fecha_inicio DateTime @default(now())
   fecha_fin DateTime?
-  ubicacion String
+  ubicacion String?
   imagen_url String?
   estado EstadoCampania @default(Activa)
+  createdAt DateTime @default(now())
 
-  hospital Hospital @relation(fields:[hospitalId], references:[id], onDelete: Cascade)
-  hospitalId Int
+  hospital Hospital? @relation(fields:[hospitalId], references:[id], onDelete: Cascade)
+  hospitalId Int?
   donaciones Donacion[]
+
+  // Campos para campañas creadas por organizadores (formulario público)
+  nombreApellidoReceptor String?
+  dniReceptor String?
+  grupoSanguineoRh String?
+  cantidadDadores String?
+  nombreCentro String?
+  direccionCompleta String?
+  horariosDias String?
+  telefonoEmailOrganizador String?
 }
 
 model Hospital {
