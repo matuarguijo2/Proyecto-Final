@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as AuthService from '../servicios/servicio';
 import AuthenticatedRequest from "../middleware/authmiddleware";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, GrupoSanguineo, FactorRH, Sexo } from "@prisma/client";
 import { comparePassword, hashPassword } from "../utilidades/contrasenia";
 
 
@@ -36,6 +36,12 @@ export const signup = async (req: Request, res: Response) => {
 
     return res.status(201).json({ accessToken });
   } catch (error: any) {
+    if (error?.code === "P2002") {
+      const target = (error?.meta?.target as string[] | undefined)?.[0];
+      if (target === "dni") return res.status(400).json({ error: "Ya existe un donante registrado con ese DNI" });
+      if (target === "email") return res.status(400).json({ error: "Ya existe una cuenta con ese correo electrónico" });
+      return res.status(400).json({ error: "Los datos ingresados ya están en uso" });
+    }
     const status = error?.status || 400;
     return res.status(status).json({ error: error?.message || "Error en el registro" });
   }
@@ -141,12 +147,58 @@ export const getMe = async (req: Request, res: Response) => {
   const typedReq = req as AuthenticatedRequest;
   try {
     const usuario = await prisma.donante.findUnique({
-      where: { id: typedReq.usuarioId }
+      where: { id: typedReq.usuarioId },
+      select: {
+        id: true,
+        dni: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        grupo_sanguineo: true,
+        factor_rh: true,
+        fecha_nacimiento: true,
+        sexo: true,
+        isActive: true,
+        estado: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     if (!usuario) return res.status(404).json({ error: "Usuario no encontrado" });
     res.json(usuario);
   } catch (error: any) {
     res.status(500).json({ error: "Error al obtener el perfil" });
+  }
+};
+
+// Actualizar perfil del usuario (sin password)
+export const updateMe = async (req: Request, res: Response) => {
+  const typedReq = req as AuthenticatedRequest;
+  const { nombre, apellido, grupo_sanguineo, factor_rh, fecha_nacimiento, sexo } = req.body;
+  try {
+    const data: Prisma.DonanteUpdateInput = {};
+    if (nombre != null) data.nombre = nombre;
+    if (apellido != null) data.apellido = apellido;
+    if (fecha_nacimiento != null) data.fecha_nacimiento = new Date(fecha_nacimiento);
+    if (grupo_sanguineo != null && ["A", "B", "AB", "O"].includes(grupo_sanguineo)) {
+      data.grupo_sanguineo = grupo_sanguineo as GrupoSanguineo;
+    }
+    if (factor_rh != null && ["positivo", "negativo"].includes(factor_rh)) {
+      data.factor_rh = factor_rh as FactorRH;
+    }
+    if (sexo != null && ["Masculino", "Femenino"].includes(sexo)) {
+      data.sexo = sexo as Sexo;
+    }
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ error: "No hay campos para actualizar" });
+    }
+    const usuario = await prisma.donante.update({
+      where: { id: typedReq.usuarioId },
+      data,
+    });
+    res.json(usuario);
+  } catch (error: any) {
+    res.status(500).json({ error: "Error al actualizar el perfil" });
   }
 };
 

@@ -39,7 +39,10 @@ export const signup = async (
   }
 
   const existing = await prisma.donante.findUnique({ where: { email } });
-  if (existing) throw new Error("El usuario ya existe");
+  if (existing) throw new Error("Ya existe una cuenta con ese correo electrónico");
+
+  const existingDni = await prisma.donante.findUnique({ where: { dni } });
+  if (existingDni) throw new Error("Ya existe un donante registrado con ese DNI");
 
   const hashedPassword = await hashPassword(password);
 

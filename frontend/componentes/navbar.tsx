@@ -1,17 +1,41 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Roboto } from "next/font/google";
 import { Poppins } from "next/font/google";
+import { useAuth } from "@/contextos/AuthContext";
 
 const roboto = Roboto({ weight: "500", subsets: ["latin"] });
 const poppins = Poppins({ weight: "600", subsets: ["latin"] });
 
-type OpenMenu = "involucrate" | "conocemas" | "serdonante" | null;
+type OpenMenu = "involucrate" | "conocemas" | "serdonante" | "registro" | "usuario" | null;
 
 export default function Navbar() {
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
+  const registroRef = useRef<HTMLDivElement>(null);
+  const usuarioRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (registroRef.current && !registroRef.current.contains(target) && usuarioRef.current && !usuarioRef.current.contains(target)) {
+        setOpenMenu(null);
+      }
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  async function handleLogout() {
+    await logout();
+    setOpenMenu(null);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <nav className={`border-b border-gray-200 bg-white ${roboto.className}`}>
@@ -21,12 +45,12 @@ export default function Navbar() {
             <Image
               src="/img/logo.png"
               alt="Gota Sangre logo"
-              width={320}
-              height={92}
+              width={400}
+              height={115}
               priority
               quality={95}
-              sizes="(min-width: 768px) 320px, 280px"
-              className="h-16 w-auto object-contain object-left md:h-[4.5rem]"
+              sizes="(min-width: 768px) 400px, 320px"
+              className="h-20 w-auto object-contain object-left md:h-[5.5rem]"
             />
           </Link>
         </div>
@@ -146,12 +170,70 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/registro"
-            className={`${poppins.className} inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-[13px] font-semibold text-white no-underline shadow-sm transition-opacity hover:opacity-90`}
-          >
-            REGÍSTRATE
-          </Link>
+          {user ? (
+            <div className="relative" ref={usuarioRef}>
+              <button
+                type="button"
+                onClick={() => setOpenMenu(openMenu === "usuario" ? null : "usuario")}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-600 transition hover:bg-gray-200"
+                aria-label="Mi cuenta"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </button>
+              {openMenu === "usuario" && (
+                <ul className="absolute right-0 top-full z-[100] mt-1 min-w-48 list-none rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+                  <li className="block w-full m-0">
+                    <Link
+                      href="/mis-datos"
+                      className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
+                      onClick={() => setOpenMenu(null)}
+                    >
+                      Mis datos
+                    </Link>
+                  </li>
+                  <li className="block w-full m-0">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="block w-full px-4 py-2 text-left text-[13px] font-medium text-[#444] hover:bg-gray-50 hover:text-primary"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+          ) : (
+            <div className="relative" ref={registroRef}>
+              <button
+                type="button"
+                onClick={() => setOpenMenu(openMenu === "registro" ? null : "registro")}
+                className={`${poppins.className} inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-opacity hover:opacity-90`}
+              >
+                REGÍSTRATE
+              </button>
+              {openMenu === "registro" && (
+                <ul className="absolute right-0 top-full z-[100] mt-1 min-w-48 list-none rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+                  <li className="block w-full m-0">
+                    <Link
+                      href="/registro/donante"
+                      className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
+                      onClick={() => setOpenMenu(null)}
+                    >
+                      Donante
+                    </Link>
+                  </li>
+                  <li className="block w-full m-0">
+                    <span className="block px-4 py-2 text-[13px] text-gray-400 cursor-default">
+                      Hospital (próximamente)
+                    </span>
+                  </li>
+                </ul>
+              )}
+            </div>
+          )}
           <Link
             href="/aporte"
             className={`${poppins.className} inline-flex items-center justify-center rounded-full bg-brand-green px-4 py-2 text-[13px] font-semibold text-white no-underline shadow-sm transition-opacity hover:opacity-90`}

@@ -92,13 +92,23 @@ export default function HeroCarousel() {
                   </p>
                 </div>
                 <div className="mt-6 flex justify-end md:mt-8">
-                  <Link
-                    href={slide.href}
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-4 text-lg font-semibold text-white no-underline transition hover:opacity-95 md:px-8 md:py-4 md:text-xl"
-                  >
-                    {slide.buttonText}
-                    <span aria-hidden>→</span>
-                  </Link>
+                  {slide.href ? (
+                    <Link
+                      href={slide.href}
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-4 text-lg font-semibold text-white no-underline transition hover:opacity-95 md:px-8 md:py-4 md:text-xl"
+                    >
+                      {slide.buttonText}
+                      <span aria-hidden>→</span>
+                    </Link>
+                  ) : (
+                    <span
+                      className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-primary/80 px-6 py-4 text-lg font-semibold text-white md:px-8 md:py-4 md:text-xl"
+                      title="Próximamente"
+                    >
+                      {slide.buttonText}
+                      <span aria-hidden>→</span>
+                    </span>
+                  )}
                 </div>
               </div>
               {/* Parte derecha: imagen ocupa todo el alto disponible */}

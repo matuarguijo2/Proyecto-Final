@@ -1,12 +1,13 @@
 import { Router } from "express";
 import {
-    signup, 
-    login, 
-    logout, 
-    refreshToken, 
-    forgotPassword, 
+    signup,
+    login,
+    logout,
+    refreshToken,
+    forgotPassword,
     resetPassword,
     getMe,
+    updateMe,
     changePassword,
     getMisDonaciones,
     crearDonacion,
@@ -25,6 +26,7 @@ router.post("/refresh-token", refreshToken);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/getme", requireAuth, getMe);
+router.patch("/me", requireAuth, updateMe);
 router.post("/changepassword", requireAuth, changePassword);
 router.get("/misdonaciones", requireAuth, getMisDonaciones);
 router.post("/donacion", requireAuth, crearDonacion);
