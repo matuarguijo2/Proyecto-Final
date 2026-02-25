@@ -72,6 +72,7 @@ model Donante {
   resetToken String?
   resetTokenExp DateTime?
   donaciones Donacion[]
+  campaniasCreadas Campania[]
 }
 
 model Campania {
@@ -87,6 +88,8 @@ model Campania {
 
   hospital Hospital? @relation(fields:[hospitalId], references:[id], onDelete: Cascade)
   hospitalId Int?
+  creadorDonante Donante? @relation(fields:[creadorDonanteId], references:[id], onDelete: SetNull)
+  creadorDonanteId Int?
   donaciones Donacion[]
   inscripciones InscripcionCampania[]
 
@@ -113,6 +116,8 @@ model Hospital {
   latitude   Float?
   longitude  Float?
   createdAt  DateTime    @default(now())
+  usuario    String?     @unique
+  password   String?
   campanias  Campania[]
   donaciones Donacion[]
 }

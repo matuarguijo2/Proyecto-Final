@@ -3,6 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contextos/AuthContext";
+import { useHospitalAuth } from "@/contextos/HospitalAuthContext";
+import { getStoredToken } from "@/lib/auth";
+import { getStoredTokenHospital } from "@/lib/authHospital";
 
 type AccionesCampanaProps = { id: string };
 
@@ -10,11 +14,16 @@ export default function AccionesCampana({ id }: AccionesCampanaProps) {
   const router = useRouter();
   const [eliminando, setEliminando] = useState(false);
   const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
+  const { token } = useAuth();
+  const { token: tokenHospital } = useHospitalAuth();
+  const authToken = token || tokenHospital || getStoredToken() || getStoredTokenHospital();
 
   const handleEliminar = async () => {
     setEliminando(true);
     try {
-      const res = await fetch(`/api/campanas/${id}`, { method: "DELETE" });
+      const headers: HeadersInit = {};
+      if (authToken) headers.Authorization = `Bearer ${authToken}`;
+      const res = await fetch(`/api/campanas/${id}`, { method: "DELETE", headers });
       if (res.ok) {
         router.refresh();
         return;

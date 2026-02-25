@@ -17,19 +17,21 @@ export default function RegistroPage() {
             className="flex flex-col items-center rounded-xl border-2 border-primary bg-white p-8 text-center no-underline shadow-sm transition hover:bg-red-50"
           >
             <span className="mb-2 text-4xl" aria-hidden>🩸</span>
-            <span className="text-xl font-semibold text-primary">Donante</span>
+            <span className="text-xl font-semibold text-primary">Usuario/Donante</span>
             <span className="mt-1 text-sm text-gray-600">
               Iniciá sesión o creá tu cuenta para donar sangre
             </span>
           </Link>
-          <div
-            className="flex flex-col items-center rounded-xl border-2 border-gray-200 bg-gray-50 p-8 text-center opacity-75"
-            aria-disabled
+          <Link
+            href="/registro/hospital"
+            className="flex flex-col items-center rounded-xl border-2 border-primary bg-white p-8 text-center no-underline shadow-sm transition hover:bg-red-50"
           >
             <span className="mb-2 text-4xl" aria-hidden>🏥</span>
-            <span className="text-xl font-semibold text-gray-500">Hospital</span>
-            <span className="mt-1 text-sm text-gray-500">Próximamente</span>
-          </div>
+            <span className="text-xl font-semibold text-primary">Hospital</span>
+            <span className="mt-1 text-sm text-gray-600">
+              Iniciá sesión o registrá tu institución
+            </span>
+          </Link>
         </div>
       </div>
     </main>

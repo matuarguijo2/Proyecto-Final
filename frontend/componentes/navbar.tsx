@@ -6,23 +6,26 @@ import { useRouter } from "next/navigation";
 import { Roboto } from "next/font/google";
 import { Poppins } from "next/font/google";
 import { useAuth } from "@/contextos/AuthContext";
+import { useHospitalAuth } from "@/contextos/HospitalAuthContext";
 
 const roboto = Roboto({ weight: "500", subsets: ["latin"] });
 const poppins = Poppins({ weight: "600", subsets: ["latin"] });
 
-type OpenMenu = "involucrate" | "conocemas" | "serdonante" | "registro" | "usuario" | null;
+type OpenMenu = "involucrate" | "conocemas" | "serdonante" | "registro" | "usuario" | "hospital" | null;
 
 export default function Navbar() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { hospital, logout: logoutHospital } = useHospitalAuth();
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
   const registroRef = useRef<HTMLDivElement>(null);
   const usuarioRef = useRef<HTMLDivElement>(null);
+  const hospitalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node;
-      if (registroRef.current && !registroRef.current.contains(target) && usuarioRef.current && !usuarioRef.current.contains(target)) {
+      if (registroRef.current && !registroRef.current.contains(target) && usuarioRef.current && !usuarioRef.current.contains(target) && hospitalRef.current && !hospitalRef.current.contains(target)) {
         setOpenMenu(null);
       }
     }
@@ -32,6 +35,13 @@ export default function Navbar() {
 
   async function handleLogout() {
     await logout();
+    setOpenMenu(null);
+    router.push("/");
+    router.refresh();
+  }
+
+  async function handleLogoutHospital() {
+    await logoutHospital();
     setOpenMenu(null);
     router.push("/");
     router.refresh();
@@ -72,7 +82,7 @@ export default function Navbar() {
               }`}
             >
               <li className="block w-full m-0">
-                <Link href="/serdonante" className="block w-full px-4 py-2 text-[#444] text-[13px] font-medium no-underline transition-colors hover:bg-gray-50 hover:text-primary">
+                <Link href="/registro/donante" className="block w-full px-4 py-2 text-[#444] text-[13px] font-medium no-underline transition-colors hover:bg-gray-50 hover:text-primary">
                   Conviértete en donante
                 </Link>
               </li>
@@ -130,7 +140,7 @@ export default function Navbar() {
             onMouseEnter={() => setOpenMenu("serdonante")}
             onMouseLeave={() => setOpenMenu(null)}
           >
-            <Link href="/serdonante" className="text-gray-700 no-underline font-medium text-[15px] py-1.5 hover:text-primary transition-colors">
+            <Link href="/registro/donante" className="text-gray-700 no-underline font-medium text-[15px] py-1.5 hover:text-primary transition-colors">
               Ser Donante
             </Link>
             <ul
@@ -170,7 +180,51 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-2">
-          {user ? (
+          {hospital ? (
+            <div className="relative" ref={hospitalRef}>
+              <button
+                type="button"
+                onClick={() => setOpenMenu(openMenu === "hospital" ? null : "hospital")}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-600 transition hover:bg-gray-200"
+                aria-label="Cuenta institución"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </button>
+              {openMenu === "hospital" && (
+                <ul className="absolute right-0 top-full z-[100] mt-1 min-w-48 list-none rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+                  <li className="block w-full m-0">
+                    <Link
+                      href="/hospital/mis-datos"
+                      className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
+                      onClick={() => setOpenMenu(null)}
+                    >
+                      Mis datos
+                    </Link>
+                  </li>
+                  <li className="block w-full m-0">
+                    <Link
+                      href="/hospital/mis-campanias"
+                      className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
+                      onClick={() => setOpenMenu(null)}
+                    >
+                      Mis campañas
+                    </Link>
+                  </li>
+                  <li className="block w-full m-0">
+                    <button
+                      type="button"
+                      onClick={handleLogoutHospital}
+                      className="block w-full px-4 py-2 text-left text-[13px] font-medium text-[#444] hover:bg-gray-50 hover:text-primary"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+          ) : user ? (
             <div className="relative" ref={usuarioRef}>
               <button
                 type="button"
@@ -191,6 +245,15 @@ export default function Navbar() {
                       onClick={() => setOpenMenu(null)}
                     >
                       Mis datos
+                    </Link>
+                  </li>
+                  <li className="block w-full m-0">
+                    <Link
+                      href="/usuario/mis-campanias"
+                      className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
+                      onClick={() => setOpenMenu(null)}
+                    >
+                      Mis campañas
                     </Link>
                   </li>
                   <li className="block w-full m-0">
@@ -222,13 +285,17 @@ export default function Navbar() {
                       className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
                       onClick={() => setOpenMenu(null)}
                     >
-                      Donante
+                      Usuario/Donante
                     </Link>
                   </li>
                   <li className="block w-full m-0">
-                    <span className="block px-4 py-2 text-[13px] text-gray-400 cursor-default">
-                      Hospital (próximamente)
-                    </span>
+                    <Link
+                      href="/registro/hospital"
+                      className="block w-full px-4 py-2 text-[13px] font-medium text-[#444] no-underline hover:bg-gray-50 hover:text-primary"
+                      onClick={() => setOpenMenu(null)}
+                    >
+                      Institución
+                    </Link>
                   </li>
                 </ul>
               )}

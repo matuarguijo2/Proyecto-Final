@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Poppins } from "next/font/google";
+import { useHospitalAuth } from "@/contextos/HospitalAuthContext";
+import { useAuth } from "@/contextos/AuthContext";
+import { updateMiCampania } from "@/lib/usuarioCampaniasApi";
 
 const poppins = Poppins({ weight: "600", subsets: ["latin"] });
 
@@ -59,10 +62,14 @@ function getDiasDelMes(mes: number, anio: number): number {
 type FormularioCrearCampanaProps = {
   initialData?: FormState;
   campaniaId?: string;
+  /** Si true, al editar se usa la API de usuario (donante) en vez de la pública */
+  editAsUsuario?: boolean;
 };
 
-export default function FormularioCrearCampana({ initialData, campaniaId }: FormularioCrearCampanaProps = {}) {
+export default function FormularioCrearCampana({ initialData, campaniaId, editAsUsuario }: FormularioCrearCampanaProps = {}) {
   const isEdit = Boolean(campaniaId);
+  const { hospital } = useHospitalAuth();
+  const { token } = useAuth();
   const [form, setForm] = useState<FormState>(() => initialData ?? initialForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [enviado, setEnviado] = useState(false);
@@ -137,12 +144,25 @@ export default function FormularioCrearCampana({ initialData, campaniaId }: Form
     setErrorEnvio(null);
     setEnviando(true);
     try {
+      const payload = { ...form };
+      if (!isEdit && hospital?.id) {
+        (payload as Record<string, unknown>).hospitalId = hospital.id;
+      }
+
+      if (isEdit && editAsUsuario && token && campaniaId) {
+        await updateMiCampania(token, campaniaId, payload as Record<string, unknown>);
+        setEnviado(true);
+        return;
+      }
+
       const url = isEdit ? `/api/campanas/${campaniaId}` : "/api/campanas";
       const method = isEdit ? "PATCH" : "POST";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        headers,
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -169,10 +189,10 @@ export default function FormularioCrearCampana({ initialData, campaniaId }: Form
               : "Tu solicitud de campaña de donación ha sido recibida correctamente."}
           </p>
           <Link
-            href={isEdit ? "/conocemas/campanas" : "/involucrate"}
+            href={isEdit ? (editAsUsuario ? "/usuario/mis-campanias" : "/conocemas/campanas") : "/involucrate"}
             className={`${poppins.className} inline-flex rounded-full bg-primary px-6 py-3 text-white no-underline hover:opacity-95`}
           >
-            {isEdit ? "Volver a Conocer campañas" : "Volver a Involúcrate"}
+            {isEdit ? (editAsUsuario ? "Volver a Mis campañas" : "Volver a Conocer campañas") : "Volver a Involúcrate"}
           </Link>
         </div>
       </div>
@@ -182,8 +202,8 @@ export default function FormularioCrearCampana({ initialData, campaniaId }: Form
   return (
     <div className="mx-auto max-w-[1200px] px-8 py-8">
       <div className="mb-8">
-        <Link href={isEdit ? "/conocemas/campanas" : "/involucrate"} className="text-primary no-underline hover:underline">
-          ← {isEdit ? "Volver a Conocer campañas" : "Volver a Involúcrate"}
+        <Link href={isEdit ? (editAsUsuario ? "/usuario/mis-campanias" : "/conocemas/campanas") : "/involucrate"} className="text-primary no-underline hover:underline">
+          ← {isEdit ? (editAsUsuario ? "Volver a Mis campañas" : "Volver a Conocer campañas") : "Volver a Involúcrate"}
         </Link>
       </div>
 
@@ -258,14 +278,14 @@ export default function FormularioCrearCampana({ initialData, campaniaId }: Form
           <h2 className="mb-6 text-xl font-semibold text-gray-800">Datos del centro de salud (dónde donar)</h2>
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Nombre del hospital / clínica / centro de hemoterapia *</label>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Nombre de la institución / clínica / centro de hemoterapia *</label>
               <input
                 type="text"
                 required
                 value={form.nombreCentro}
                 onChange={(e) => update("nombreCentro", e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Ej. Hospital General"
+                placeholder="Ej. Centro de salud"
               />
               {errors.nombreCentro && <p className="mt-1 text-sm text-red-600">{errors.nombreCentro}</p>}
             </div>
@@ -418,7 +438,7 @@ export default function FormularioCrearCampana({ initialData, campaniaId }: Form
             {enviando ? (isEdit ? "Guardando…" : "Enviando…") : (isEdit ? "Guardar cambios" : "Enviar campaña")}
           </button>
           <Link
-            href={isEdit ? "/conocemas/campanas" : "/involucrate"}
+            href={isEdit ? (editAsUsuario ? "/usuario/mis-campanias" : "/conocemas/campanas") : "/involucrate"}
             className="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-3.5 text-gray-700 no-underline hover:bg-gray-50"
           >
             Cancelar

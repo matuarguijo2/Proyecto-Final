@@ -85,9 +85,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const authHeader = request.headers.get("authorization");
     const res = await fetch(`${API_URL}/api/campanias`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
       body: JSON.stringify(body),
     });
     const data = await res.json();

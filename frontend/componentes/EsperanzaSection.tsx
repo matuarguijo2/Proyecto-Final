@@ -6,7 +6,6 @@ type CardWithImage = {
   href: string;
   image: string;
   imageAlt: string;
-  donateLabel?: boolean;
 };
 type CardDonarVida = { type: "donar-vida"; href: string };
 type CardItem = CardWithImage | CardDonarVida;
@@ -15,15 +14,14 @@ const cards: CardItem[] = [
   {
     title: "Registrate como Donante",
     href: "/registro",
-    image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80",
-    imageAlt: "Donación de sangre",
+    image: "https://images.unsplash.com/photo-1584515933487-779824d29309?w=600&q=80",
+    imageAlt: "Registro como donante",
   },
   {
     title: "Ayudanos a seguir ayudando",
     href: "/aporte",
     image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80",
     imageAlt: "Contribuir",
-    donateLabel: true,
   },
   {
     type: "donar-vida",
@@ -112,11 +110,6 @@ export default function EsperanzaSection() {
                   />
                 </div>
                 <div className="flex flex-1 flex-col justify-end p-5">
-                  {c.donateLabel && (
-                    <p className="mb-2 text-2xl font-bold uppercase tracking-wide text-primary">
-                      DONATE
-                    </p>
-                  )}
                   <Link
                     href={c.href}
                     className="inline-flex justify-center rounded-full border border-primary bg-white px-4 py-2.5 font-medium text-gray-900 no-underline transition hover:bg-red-50"

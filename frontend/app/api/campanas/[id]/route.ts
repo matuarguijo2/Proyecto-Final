@@ -95,9 +95,13 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
+    const authHeader = request.headers.get("authorization");
     const res = await fetch(`${API_URL}/api/campanias/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
       body: JSON.stringify(body),
     });
     const data = await res.json();
@@ -117,15 +121,26 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const res = await fetch(`${API_URL}/api/campanias/${id}`, { method: "DELETE" });
+    const authHeader = request.headers.get("authorization");
+    const res = await fetch(`${API_URL}/api/campanias/${id}`, {
+      method: "DELETE",
+      headers: authHeader ? { Authorization: authHeader } : undefined,
+    });
     if (!res.ok) {
       if (res.status === 404) {
         return NextResponse.json({ error: "Campaña no encontrada" }, { status: 404 });
+      }
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        return NextResponse.json(
+          { error: data.error || "No tenés permiso para eliminar esta campaña" },
+          { status: 403 }
+        );
       }
       const data = await res.json().catch(() => ({}));
       return NextResponse.json(

@@ -7,6 +7,9 @@ import { comparePassword, hashPassword } from "../utilidades/contrasenia";
 
 const prisma = new PrismaClient();
 
+/** Tipo para campaña con creadorDonanteId (por si el cliente Prisma no se regeneró tras la migración) */
+type CampaniaConCreador = { id: number; creadorDonanteId: number | null; [k: string]: unknown };
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { email, password, dni, nombre, apellido, grupo_sanguineo, factor_rh, fecha_nacimiento, sexo } = req.body;
@@ -318,4 +321,100 @@ export const eliminarUsuario = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ error: "Error al eliminar el usuario" });
   }
-}
+};
+
+// --- Campañas creadas por el donante (organizador) ---
+
+export const getMisCampanias = async (req: Request, res: Response) => {
+  const typedReq = req as AuthenticatedRequest;
+  try {
+    const campanias = await prisma.campania.findMany({
+      where: { creadorDonanteId: typedReq.usuarioId } as Record<string, unknown>,
+      include: { _count: { select: { inscripciones: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(campanias);
+  } catch (error: any) {
+    res.status(500).json({ error: "Error al obtener las campañas" });
+  }
+};
+
+export const updateMiCampania = async (req: Request, res: Response) => {
+  const typedReq = req as AuthenticatedRequest;
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) return res.status(400).json({ error: "Id inválido" });
+  const body = req.body;
+  const {
+    nombreApellido,
+    dni,
+    grupoSanguineoRh,
+    cantidadDadores,
+    nombreCentro,
+    direccionCompleta,
+    horariosDias,
+    fechaLimiteAnio,
+    fechaLimiteMes,
+    fechaLimiteDia,
+    tituloAsunto,
+    descripcionRequisitos,
+    telefonoEmailOrganizador,
+    imagenUrl,
+  } = body;
+
+  if (!tituloAsunto || !nombreApellido || !dni || !nombreCentro || !direccionCompleta || !horariosDias || !fechaLimiteAnio || !fechaLimiteMes || !fechaLimiteDia || !descripcionRequisitos || !telefonoEmailOrganizador) {
+    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  }
+
+  try {
+    const existente = await prisma.campania.findUnique({ where: { id } }) as CampaniaConCreador | null;
+    if (!existente || existente.creadorDonanteId !== typedReq.usuarioId) {
+      return res.status(404).json({ error: "Campaña no encontrada o no autorizada" });
+    }
+    const mes = parseInt(fechaLimiteMes, 10);
+    const fechaLimite = new Date(parseInt(fechaLimiteAnio, 10), mes, parseInt(fechaLimiteDia, 10));
+    const campania = await prisma.campania.update({
+      where: { id },
+      data: {
+        nombre: tituloAsunto,
+        descripcion: descripcionRequisitos,
+        fecha_fin: fechaLimite,
+        ubicacion: direccionCompleta,
+        imagen_url: imagenUrl !== undefined ? (imagenUrl || null) : undefined,
+        nombreApellidoReceptor: nombreApellido,
+        dniReceptor: dni,
+        grupoSanguineoRh: grupoSanguineoRh || undefined,
+        cantidadDadores: cantidadDadores || undefined,
+        nombreCentro,
+        direccionCompleta,
+        horariosDias,
+        telefonoEmailOrganizador,
+      },
+    });
+    return res.json(campania);
+  } catch (error: any) {
+    if (error?.code === "P2025") return res.status(404).json({ error: "Campaña no encontrada" });
+    res.status(500).json({ error: "Error al actualizar la campaña" });
+  }
+};
+
+export const getInscripcionesMiCampania = async (req: Request, res: Response) => {
+  const typedReq = req as AuthenticatedRequest;
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) return res.status(400).json({ error: "Id inválido" });
+  try {
+    const campania = await prisma.campania.findUnique({
+      where: { id },
+      select: { creadorDonanteId: true } as Record<string, boolean>,
+    }) as CampaniaConCreador | null;
+    if (!campania || campania.creadorDonanteId !== typedReq.usuarioId) {
+      return res.status(404).json({ error: "Campaña no encontrada o no autorizada" });
+    }
+    const inscripciones = await prisma.inscripcionCampania.findMany({
+      where: { campaniaId: id },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(inscripciones);
+  } catch (error: any) {
+    res.status(500).json({ error: "Error al obtener las inscripciones" });
+  }
+};

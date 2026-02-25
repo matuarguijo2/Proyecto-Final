@@ -5,7 +5,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/auth";
-
+import authHospitalRoutes from "./routes/authHospital";
+import hospitalRoutes from "./routes/hospitalRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -19,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/auth/hospital", authHospitalRoutes);
+app.use("/api/hospital", hospitalRoutes);
 app.use("/api", userRoutes);
 
 

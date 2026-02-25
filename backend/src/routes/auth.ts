@@ -13,7 +13,10 @@ import {
     crearDonacion,
     actualizarDonacion,
     eliminarDonacion,
-    eliminarUsuario
+    eliminarUsuario,
+    getMisCampanias,
+    updateMiCampania,
+    getInscripcionesMiCampania,
 } from "../controladores/authcontrolador";
 import AuthenticatedRequest, { requireAuth } from "../middleware/authmiddleware";
 
@@ -29,6 +32,9 @@ router.get("/getme", requireAuth, getMe);
 router.patch("/me", requireAuth, updateMe);
 router.post("/changepassword", requireAuth, changePassword);
 router.get("/misdonaciones", requireAuth, getMisDonaciones);
+router.get("/mis-campanias", requireAuth, getMisCampanias);
+router.patch("/campanias/:id", requireAuth, updateMiCampania);
+router.get("/campanias/:id/inscripciones", requireAuth, getInscripcionesMiCampania);
 router.post("/donacion", requireAuth, crearDonacion);
 router.put("/donacion/:id", requireAuth, actualizarDonacion);
 router.delete("/donacion/:id", requireAuth, eliminarDonacion);

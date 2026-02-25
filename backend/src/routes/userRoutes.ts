@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
+import { verificarAccesoToken } from "../utilidades/token";
 
 const prisma = new PrismaClient();
 const router = Router();
+
+/** Tipo para campaña con campos de titularidad (el cliente Prisma puede no tenerlos si no se regeneró tras la migración) */
+type CampaniaOwner = { id: number; hospitalId: number | null; creadorDonanteId: number | null };
 
 // Crear usuario (Donante)
 router.post("/usuarios", async (req, res) => {
@@ -25,6 +29,19 @@ router.post("/usuarios", async (req, res) => {
 router.post("/campanias", async (req, res) => {
   try {
     const body = req.body;
+    let creadorDonanteId: number | undefined;
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    if (token) {
+      try {
+        const payload = verificarAccesoToken(token);
+        if (payload.tipo === "donante" && payload.usuarioId != null) {
+          creadorDonanteId = Number(payload.usuarioId);
+        }
+      } catch {
+        // token inválido, seguir sin creadorDonanteId
+      }
+    }
 
     // Formato organizador (formulario público)
     if (body.tituloAsunto !== undefined) {
@@ -43,6 +60,7 @@ router.post("/campanias", async (req, res) => {
         descripcionRequisitos,
         telefonoEmailOrganizador,
         imagenUrl,
+        hospitalId: hospitalIdBody,
       } = body;
 
       if (!tituloAsunto || !nombreApellido || !dni || !nombreCentro || !direccionCompleta || !horariosDias || !fechaLimiteAnio || !fechaLimiteMes || !fechaLimiteDia || !descripcionRequisitos || !telefonoEmailOrganizador) {
@@ -67,6 +85,8 @@ router.post("/campanias", async (req, res) => {
           direccionCompleta,
           horariosDias,
           telefonoEmailOrganizador,
+          ...(hospitalIdBody != null && Number.isInteger(Number(hospitalIdBody)) && { hospitalId: Number(hospitalIdBody) }),
+          ...(creadorDonanteId != null && Number.isInteger(creadorDonanteId) && { creadorDonanteId }),
         },
       });
       return res.json(campania);
@@ -254,13 +274,40 @@ router.post("/campanias/:id/inscribir", async (req, res) => {
   }
 });
 
-// Actualizar campaña (formato organizador, mismos campos que crear)
+// Actualizar campaña (formato organizador, mismos campos que crear). Solo el creador (donante o institución) puede modificar.
 router.patch("/campanias/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) {
       return res.status(400).json({ error: "Id inválido" });
     }
+    const campania = await prisma.campania.findUnique({
+      where: { id },
+      select: { id: true, hospitalId: true, creadorDonanteId: true } as Record<string, boolean>,
+    }) as CampaniaOwner | null;
+    if (!campania) {
+      return res.status(404).json({ error: "Campaña no encontrada" });
+    }
+
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    let isOwner = false;
+    if (token) {
+      try {
+        const payload = verificarAccesoToken(token);
+        if (payload.tipo === "donante" && payload.usuarioId != null) {
+          isOwner = campania.creadorDonanteId === Number(payload.usuarioId);
+        } else if (payload.tipo === "hospital" && payload.hospitalId != null) {
+          isOwner = campania.hospitalId === payload.hospitalId;
+        }
+      } catch {
+        // token inválido
+      }
+    }
+    if (!isOwner) {
+      return res.status(403).json({ error: "Solo el usuario o la institución que creó la campaña puede modificarla" });
+    }
+
     const body = req.body;
     const {
       nombreApellido,
@@ -286,7 +333,7 @@ router.patch("/campanias/:id", async (req, res) => {
     const mes = parseInt(fechaLimiteMes, 10);
     const fechaLimite = new Date(parseInt(fechaLimiteAnio, 10), mes, parseInt(fechaLimiteDia, 10));
 
-    const campania = await prisma.campania.update({
+    const actualizada = await prisma.campania.update({
       where: { id },
       data: {
         nombre: tituloAsunto,
@@ -304,7 +351,7 @@ router.patch("/campanias/:id", async (req, res) => {
         telefonoEmailOrganizador,
       },
     });
-    return res.json(campania);
+    return res.json(actualizada);
   } catch (error: unknown) {
     if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "P2025") {
       return res.status(404).json({ error: "Campaña no encontrada" });
@@ -314,13 +361,40 @@ router.patch("/campanias/:id", async (req, res) => {
   }
 });
 
-// Eliminar campaña
+// Eliminar campaña. Solo el creador (donante o institución) puede eliminar.
 router.delete("/campanias/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) {
       return res.status(400).json({ error: "Id inválido" });
     }
+    const campania = await prisma.campania.findUnique({
+      where: { id },
+      select: { id: true, hospitalId: true, creadorDonanteId: true } as Record<string, boolean>,
+    }) as CampaniaOwner | null;
+    if (!campania) {
+      return res.status(404).json({ error: "Campaña no encontrada" });
+    }
+
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    let isOwner = false;
+    if (token) {
+      try {
+        const payload = verificarAccesoToken(token);
+        if (payload.tipo === "donante" && payload.usuarioId != null) {
+          isOwner = campania.creadorDonanteId === Number(payload.usuarioId);
+        } else if (payload.tipo === "hospital" && payload.hospitalId != null) {
+          isOwner = campania.hospitalId === payload.hospitalId;
+        }
+      } catch {
+        // token inválido
+      }
+    }
+    if (!isOwner) {
+      return res.status(403).json({ error: "Solo el usuario o la institución que creó la campaña puede eliminarla" });
+    }
+
     await prisma.campania.delete({
       where: { id }
     });
@@ -336,7 +410,17 @@ router.delete("/campanias/:id", async (req, res) => {
 
 router.get("/hospitales", async (req, res) => {
   const hospitales = await prisma.hospital.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      OR: [
+        { direccion: { contains: "Tucumán", mode: "insensitive" } },
+        { direccion: { contains: "tucuman", mode: "insensitive" } },
+        { direccion: { contains: "San Miguel de Tucumán", mode: "insensitive" } },
+      ],
+      NOT: {
+        direccion: { contains: "Mendoza", mode: "insensitive" },
+      },
+    },
     orderBy: { nombre: "asc" },
   });
   res.json(hospitales);
