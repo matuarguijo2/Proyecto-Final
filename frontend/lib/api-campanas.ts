@@ -76,21 +76,29 @@ function mapBackendToFrontend(c: CampanaBackend): Campana {
 }
 
 export async function getCampanas(): Promise<Campana[]> {
-  const res = await fetch(`${API_URL}/api/campanias`, { cache: "no-store" });
-  if (!res.ok) {
+  try {
+    const res = await fetch(`${API_URL}/api/campanias`, { cache: "no-store" });
+    if (!res.ok) {
+      return [];
+    }
+    const data: CampanaBackend[] = await res.json();
+    return data.map(mapBackendToFrontend);
+  } catch {
     return [];
   }
-  const data: CampanaBackend[] = await res.json();
-  return data.map(mapBackendToFrontend);
 }
 
 export async function getCampanaById(id: string): Promise<Campana | null> {
-  const res = await fetch(`${API_URL}/api/campanias/${id}`, { cache: "no-store" });
-  if (!res.ok) {
+  try {
+    const res = await fetch(`${API_URL}/api/campanias/${id}`, { cache: "no-store" });
+    if (!res.ok) {
+      return null;
+    }
+    const data: CampanaBackend = await res.json();
+    return mapBackendToFrontend(data);
+  } catch {
     return null;
   }
-  const data: CampanaBackend = await res.json();
-  return mapBackendToFrontend(data);
 }
 
 const getApiUrl = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
