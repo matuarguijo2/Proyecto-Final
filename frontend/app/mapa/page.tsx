@@ -71,7 +71,7 @@ export default function MapaPage() {
         };
         run();
       })
-      .catch(() => setError("No se pudieron cargar los centros. Comprobá que el backend esté en ejecución."))
+      .catch(() => setError("No se pudieron cargar los centros de donación. Comprobá que el backend esté en ejecución o intentá más tarde."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -87,12 +87,16 @@ export default function MapaPage() {
           <div className="flex h-[400px] items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
             <p className="text-gray-500">Cargando mapa…</p>
           </div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
-            {error}
-          </div>
         ) : (
           <>
+            {error && (
+              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                <p className="text-sm">{error}</p>
+                <p className="mt-2 text-xs text-amber-700">
+                  El mapa se muestra igual; los centros aparecerán cuando el servidor esté disponible.
+                </p>
+              </div>
+            )}
             {geocoding && (
               <p className="mb-2 text-sm text-gray-500">
                 Obteniendo ubicaciones de los centros…
