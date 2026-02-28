@@ -11,8 +11,11 @@ import hospitalRoutes from "./routes/hospitalRoutes";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+  : ["http://localhost:3000", "http://localhost:5173"];
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173"],
+  origin: corsOrigins,
   credentials: true
 }));
 app.use(express.json())
