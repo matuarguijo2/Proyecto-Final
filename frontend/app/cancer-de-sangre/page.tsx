@@ -35,7 +35,7 @@ export default function CancerDeSangre() {
               </div>
               <div className="relative flex min-h-[300px] min-w-[300px] flex-1 overflow-hidden rounded-lg">
                 <Image
-                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80"
+                  src="/img/Ilustracion-leucemia-scaled.webp"
                   alt="Ilustración relacionada con leucemia y células sanguíneas"
                   fill
                   className="object-cover"
@@ -65,8 +65,8 @@ export default function CancerDeSangre() {
               </div>
               <div className="order-1 relative flex min-h-[300px] min-w-[300px] flex-1 overflow-hidden rounded-lg">
                 <Image
-                  src="https://images.unsplash.com/photo-1579154204850-6ed48b2f3794?w=600&q=80"
-                  alt="Ilustración relacionada con sistema linfático y salud"
+                  src="/img/485348_846726.avif"
+                  alt="Ilustración relacionada con sistema linfático y linfoma"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
