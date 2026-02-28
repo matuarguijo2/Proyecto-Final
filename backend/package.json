@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "start": "ts-node src/index.ts",
-    "build": "node node_modules/prisma/build/index.js generate",
+    "start": "node dist/index.js",
+    "build": "npx tsc && node node_modules/prisma/build/index.js generate",
     "test": "jest",
     "prisma:seed": "ts-node prisma/seed.ts"
   },
