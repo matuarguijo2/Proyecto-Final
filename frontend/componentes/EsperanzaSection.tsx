@@ -18,12 +18,6 @@ const cards: CardItem[] = [
     imageAlt: "Registro como donante",
   },
   {
-    title: "Ayudanos a seguir ayudando",
-    href: "/aporte",
-    image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80",
-    imageAlt: "Contribuir",
-  },
-  {
     type: "donar-vida",
     href: "/involucrate/crear-campana",
   },
@@ -89,7 +83,7 @@ export default function EsperanzaSection() {
           </Link>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card, index) => {
             if ("type" in card && card.type === "donar-vida") {
               return <DonarVidaCard key={index} />;
@@ -105,7 +99,7 @@ export default function EsperanzaSection() {
                     src={c.image}
                     alt={c.imageAlt}
                     fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover"
                   />
                 </div>

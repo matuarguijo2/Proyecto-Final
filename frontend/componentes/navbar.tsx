@@ -301,12 +301,6 @@ export default function Navbar() {
               )}
             </div>
           )}
-          <Link
-            href="/aporte"
-            className={`${poppins.className} inline-flex items-center justify-center rounded-full bg-brand-green px-4 py-2 text-[13px] font-semibold text-white no-underline shadow-sm transition-opacity hover:opacity-90`}
-          >
-            HAZ TU APORTE
-          </Link>
         </div>
       </div>
     </nav>

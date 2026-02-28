@@ -157,15 +157,6 @@ export default function Footer() {
                         Crea tu campaña
                       </Link>
                     </li>
-                    <li>
-                      <Link
-                        href="/aporte"
-                        className="text-sm text-gray-600 no-underline hover:text-primary"
-                        onClick={() => setFormasAyudaOpen(false)}
-                      >
-                        Aporta a Gota de Sangre
-                      </Link>
-                    </li>
                   </ul>
                 )}
               </li>

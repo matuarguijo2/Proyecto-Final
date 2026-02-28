@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function CancerDeSangre() {
   return (
     <main>
@@ -31,12 +33,14 @@ export default function CancerDeSangre() {
                   <li>Sangrado o formación de moretones con facilidad.</li>
                 </ul>
               </div>
-              <div className="flex min-w-[300px] flex-1 items-center justify-center rounded-lg bg-gray-200 h-[300px]">
-                <div className="text-center text-gray-500">
-                  <span className="mb-2.5 block text-4xl">🩸</span>
-                  <p>Ilustración de Células Leucémicas</p>
-                  <small>Glóbulos blancos anormales vs normales</small>
-                </div>
+              <div className="relative flex min-h-[300px] min-w-[300px] flex-1 overflow-hidden rounded-lg">
+                <Image
+                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80"
+                  alt="Ilustración relacionada con leucemia y células sanguíneas"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
               </div>
             </div>
           </div>
@@ -59,12 +63,14 @@ export default function CancerDeSangre() {
                   <li>Picazón en la piel.</li>
                 </ul>
               </div>
-              <div className="order-1 flex min-w-[300px] flex-1 items-center justify-center rounded-lg bg-gray-200 h-[300px]">
-                <div className="text-center text-gray-500">
-                  <span className="mb-2.5 block text-4xl">🧬</span>
-                  <p>Ilustración Sistema Linfático</p>
-                  <small>Afectación en ganglios linfáticos</small>
-                </div>
+              <div className="order-1 relative flex min-h-[300px] min-w-[300px] flex-1 overflow-hidden rounded-lg">
+                <Image
+                  src="https://images.unsplash.com/photo-1579154204850-6ed48b2f3794?w=600&q=80"
+                  alt="Ilustración relacionada con sistema linfático y salud"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
               </div>
             </div>
           </div>
