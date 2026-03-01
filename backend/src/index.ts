@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4000;
 
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
-  : ["http://localhost:3000", "http://localhost:5173", "http://localhost:4000", "http://https://proyecto-final-eight-beta.vercel.app"];
+  : ["http://localhost:3000", "http://localhost:5173", "http://localhost:4000", "http://proyecto-final-eight-beta.vercel.app"];
 app.use(cors({
   origin: corsOrigins,
   credentials: true
