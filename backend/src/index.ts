@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4000;
 
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
-  : ["http://localhost:3000", "http://localhost:5173"];
+  : ["http://localhost:3000", "http://localhost:5173", "http://localhost:4000", "http://https://proyecto-final-eight-beta.vercel.app"];
 app.use(cors({
   origin: corsOrigins,
   credentials: true
@@ -21,23 +21,10 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 app.use("/api/auth", authRoutes);
 app.use("/api/auth/hospital", authHospitalRoutes);
 app.use("/api/hospital", hospitalRoutes);
 app.use("/api", userRoutes);
-
-
-app.get("/", (req, res) => {
-  res.json({ message: "Servidor corriendo con ts-node 🚀" });
-});
-
-
-app.use((req, res) => {
-  res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.originalUrl}` });
-});
-
-
 app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("Unhandled error:", err);
   res.status(err?.status || 500).json({ error: err?.message || "Error interno del servidor" });
